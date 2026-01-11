@@ -1,0 +1,29 @@
+# python generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# venv
+.venv
+venv
+.idea
+requirements.lock
+requirements-dev.lock
+.DS_Store
+
+# env
+.env
+
+# Test output files
+test_output/
+src/measures_test_data/measures_test_output/
+*.xlsx
+
+# temp files
+
+# IDE files
+.vscode/
+.idea/
