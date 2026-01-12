@@ -117,8 +117,4 @@ def start_bulk_task(companies: list[str]) -> FT:
     )
 
 
-def random_function():
-    return "ooo i don't have a return type"
-
-
 serve()
