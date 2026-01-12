@@ -71,7 +71,7 @@ def get_event_stream(names: str) -> EventStream:
 
 
 @rt("/")
-async def get_root() -> FT:
+def get_root() -> FT:
     return Main(cls="container")(
         Title("Bulk Onboarding"),
         H2("Onboard Companies"),
@@ -104,7 +104,7 @@ def get_add_input() -> FT:
 
 
 @rt("/start-bulk-task")
-async def start_bulk_task(companies: list[str]) -> FT:
+def start_bulk_task(companies: list[str]) -> FT:
     # Filter out empty strings if the user left any blank
     valid_companies = [c for c in companies if c.strip()]
 

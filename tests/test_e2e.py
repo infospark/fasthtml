@@ -1,7 +1,7 @@
 from playwright.sync_api import Page, expect
 
 
-def test_onboarding_flow(page: Page) -> None:
+def test_onboarding_flow(page: Page, server) -> None:
     # 1. Navigate to your local dev server
     # (Ensure your FastHTML app is running on 5001)
     page.goto("http://localhost:5001")

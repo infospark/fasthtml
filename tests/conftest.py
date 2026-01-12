@@ -13,7 +13,7 @@ def is_port_open(port: int) -> bool:
         return s.connect_ex(("localhost", port)) == 0
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def server() -> Generator[None, None, None]:
     # 1. Start the FastHTML server in the background
     # Set PYTHONPATH to include src directory so imports work
