@@ -1,0 +1,46 @@
+name: Build Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Project Dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Static Analysis (Mypy)
+        run: mypy .
+
+      - name: Ruff Lint
+        run: ruff check .
+
+      - name: Execute Test Suite
+        # Setting PYTHONPATH ensures the background server can find your modules
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/src
+          pytest --cov=src
+        env:
+          # Run playwright in headless mode for CI
+          HEADLESS: True 
+
+      - name: Upload Test Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: .coverage
