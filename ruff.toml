@@ -4,13 +4,26 @@ exclude = ["*.md"]
 # Python version to target with UP
 target-version = "py312"
 
-# Linter-specific settings  F = Pyflakes basic errors, E = Style Errors, I = Import Sorting, B = Bugbears, C4 = comprehensio, UP = Modern Syntax
-# For now "PL" - Pylint - is not enabled - working through these!
-lint.select = ["F", "E", "I", "B", "C4", "UP"]
+lint.select = [
+    "F",    # Pyflakes
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "I",    # isort (imports)
+    "B",    # flake8-bugbear (common bugs)
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade (modern syntax)
+    "C90",  # McCabe complexity
+    "PL",   # Pylint (all rules)
+    "N",    # pep8-naming (ensures classes are CapWords, functions are snake_case)
+]
 
-# Explicitly ignore the E501 line length rule
-# Ignore the too many returns rule - we're using Railway Oriented Programming which is at odds with this rule - we WANT lots of return statements!
-lint.ignore = ["E501", "PLR0911"] 
+# Explicitly ignore the some of the rules as we're Railway style
+lint.ignore = [
+    "E501",    # Ignore line length
+    "PLR0911", # Too many return statements (Required for your Railway style)
+    "PLR0913", # Too many arguments (Global ignore, or keep per-file as you have)
+    "N802", # Allow upper case function names - FastHTML component-style
+]
 
 [lint.per-file-ignores]
 
@@ -21,3 +34,8 @@ lint.ignore = ["E501", "PLR0911"]
 # Ignore 'Too many arguments' (PLR0913) for all files in the data_model/ directory.
 # This exempts factory methods (e.g. create) for Data Classes from the strict 5-argument limit.
 "deltabase/data_model/*" = ["PLR0913"]
+
+[lint.mccabe]
+# The "Strict" standard is 10. 15 is "Moderate".
+max-complexity = 10
+
