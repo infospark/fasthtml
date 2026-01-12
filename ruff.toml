@@ -1,0 +1,23 @@
+# Do not check markdown files
+exclude = ["*.md"]
+
+# Python version to target with UP
+target-version = "py312"
+
+# Linter-specific settings  F = Pyflakes basic errors, E = Style Errors, I = Import Sorting, B = Bugbears, C4 = comprehensio, UP = Modern Syntax
+# For now "PL" - Pylint - is not enabled - working through these!
+lint.select = ["F", "E", "I", "B", "C4", "UP"]
+
+# Explicitly ignore the E501 line length rule
+# Ignore the too many returns rule - we're using Railway Oriented Programming which is at odds with this rule - we WANT lots of return statements!
+lint.ignore = ["E501", "PLR0911"] 
+
+[lint.per-file-ignores]
+
+# Ignore the 'Magic number' rule (PLR2004) for all files in the 'tests/' directory
+# Also don't too much care about code complexity or test size
+"deltabase/tests/*" = ["PLR2004", "PLR0915", "PLR0912", "PLR0911"]
+
+# Ignore 'Too many arguments' (PLR0913) for all files in the data_model/ directory.
+# This exempts factory methods (e.g. create) for Data Classes from the strict 5-argument limit.
+"deltabase/data_model/*" = ["PLR0913"]

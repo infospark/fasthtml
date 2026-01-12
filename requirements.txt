@@ -1,1 +1,4 @@
 python-fasthtml==0.12.39
+mypy==1.19.1
+ruff==0.14.11
+pytest==9.0.2
