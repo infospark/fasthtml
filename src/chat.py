@@ -1,9 +1,10 @@
 # This is your core logic function
+import asyncio
 import logging
 from collections.abc import AsyncIterable, Callable
 from urllib.parse import urlencode
 
-from fasthtml.common import FT, H2, Article, Button, Card, Div, FastHTML, Form, Header, Input, Main, StreamingResponse, Title
+from fasthtml.common import FT, H2, Article, Button, Card, Div, FastHTML, Form, Header, Input, Main, P, StreamingResponse, Title
 
 from utils import format_for_sse
 
@@ -39,15 +40,24 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable
         # Pass the prompt in and return a div that will be filled with the response stream
         logging.info(f"Posting chat prompt: {prompt}")
         stream_url = f"{CHAT_RESPONSE_STREAM_URL}?{urlencode({'prompt': prompt})}"
-        return Div(hx_ext="sse", sse_connect=stream_url)(Card(Div(sse_swap="message")("Processing chat prompt...")))
+        return Div(id="sse-container", hx_ext="sse", sse_connect=stream_url)(Card(Div(sse_swap="message")("Processing chat prompt...")))
 
     @app.get(CHAT_RESPONSE_STREAM_URL)
     async def get_chat_response_stream(prompt: str) -> StreamingResponse:
         logging.info(f"Getting chat response stream for prompt: {prompt}")
 
+        # TODO - aggregate the responses - adding each time not replacing the entire container
         async def sse_generator() -> AsyncIterable[str]:
             async for msg in process_chat(prompt):
                 # Manually do what EventStream does
                 yield format_for_sse(Div(msg))
+            await asyncio.sleep(0.5)
+            logging.info("Chat response stream completed")
+            yield format_for_sse(
+                # We replace the entire container by ID
+                Div(id="sse-container", hx_swap_oob="true")(
+                    P("The connection is now closed."),
+                )
+            )
 
         return StreamingResponse(sse_generator(), media_type="text/event-stream")
