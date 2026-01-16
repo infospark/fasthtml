@@ -12,9 +12,8 @@ logging.basicConfig(
 )
 
 # Create the app instance at the module level
-# This allows Uvicorn to find the 'app' object
 app = start_app(process_chat)
 
 if __name__ == "__main__":
-    # Only block and serve if we are running this file directly
+    # Only call serve (which is a blocking call) if we are running this file directly
     serve()

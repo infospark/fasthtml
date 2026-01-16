@@ -1,43 +1,55 @@
-import logging
-import os
-import socket
-import subprocess
+import threading
 import time
 from collections.abc import Generator
 
 import pytest
+import uvicorn
+from fasthtml.common import FastHTML
+
+from app import process_chat, start_app  # Import your factory and logic
 
 
-def is_port_open(port: int) -> bool:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(("localhost", port)) == 0
+class ThreadedUvicorn(threading.Thread):
+    def __init__(self, app: FastHTML, host: str = "127.0.0.1", port: int = 5001) -> None:
+        super().__init__(daemon=True)
+        self.server = uvicorn.Server(
+            uvicorn.Config(
+                app,
+                host=host,
+                port=port,
+                log_level="warning",  # Reduce noise
+                ws="none",  # <--- ADD THIS: Disables the websocket protocol
+            )
+        )
+
+    def run(self) -> None:
+        self.server.run()
+
+    def stop(self) -> None:
+        self.server.should_exit = True
 
 
 @pytest.fixture(scope="session")
 def server() -> Generator[None, None, None]:
-    # 1. Start the FastHTML server in the background
-    # Set PYTHONPATH to include src directory so imports work
-    env = os.environ.copy()
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    src_path = os.path.join(project_root, "src")
-    env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
+    # 1. Initialize the app instance using your factory
+    # This is where dependency injection happens for your tests!
+    app = start_app(process_chat)
 
-    proc = subprocess.Popen(
-        ["python", "-u", "src/main.py"],  # -u for unbuffered output
-        cwd=project_root,
-        env=env,
-    )
-    logging.info("Starting server...")
-    # 2. Wait for the server to actually be ready
+    # 2. Start Uvicorn in a background thread
+    server_thread = ThreadedUvicorn(app, port=5001)
+    server_thread.start()
+
+    # 3. Wait for the server to be ready
     timeout = 5
     start_time = time.time()
-    while not is_port_open(5001):
+    while not server_thread.server.started:
         if time.time() - start_time > timeout:
-            proc.terminate()
+            server_thread.stop()
             raise RuntimeError("Server failed to start on port 5001")
         time.sleep(0.1)
-    logging.info("Server started successfully on port 5001")
-    yield  # This is where the tests run
 
-    # 3. Shutdown after all tests are finished
-    proc.terminate()
+    yield  # Tests run here
+
+    # 4. Clean shutdown
+    server_thread.stop()
+    server_thread.join(timeout=2)
