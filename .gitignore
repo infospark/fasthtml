@@ -27,3 +27,6 @@ src/measures_test_data/measures_test_output/
 # IDE files
 .vscode/
 .idea/
+
+# Coverage files
+.coverage*
