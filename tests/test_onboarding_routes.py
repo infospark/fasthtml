@@ -3,17 +3,13 @@ from collections.abc import Generator
 import pytest
 from starlette.testclient import TestClient
 
-from main import app
+from main import HTMX_REQUEST_HEADERS, OK, app
 from onboarding import (
     ONBOARDING_ADD_COMPANY_URL,
     ONBOARDING_START_TASKS_URL,
     ONBOARDING_STREAM_TASKS_STATUS_URL,
     ONBOARDING_URL,
 )  # Import your FastHTML app object
-
-htmx_request_headers = {"HX-Request": "true"}
-
-OK = 200
 
 
 @pytest.fixture
@@ -35,7 +31,7 @@ def test_get_onboarding_page(client: TestClient) -> None:
 
 def test_get_onboarding_page_with_filters(client: TestClient) -> None:
     # Act: Request the dashboard with a specific 'status' filter
-    response = client.get(ONBOARDING_URL, params={"status": "pending"}, headers=htmx_request_headers)
+    response = client.get(ONBOARDING_URL, params={"status": "pending"}, headers=HTMX_REQUEST_HEADERS)
 
     assert response.status_code == OK
     # Check that the 'pending' state is reflected in the HTML
@@ -47,7 +43,7 @@ def test_onboarding_stream_tasks_status(client: TestClient) -> None:
     response = client.get(
         ONBOARDING_STREAM_TASKS_STATUS_URL,
         params={"names": "Acme Corp,Example Inc"},
-        headers=htmx_request_headers,
+        headers=HTMX_REQUEST_HEADERS,
     )
 
     assert response.status_code == OK
@@ -58,7 +54,7 @@ def test_onboarding_stream_tasks_status(client: TestClient) -> None:
 
 def test_onboarding_add_company(client: TestClient) -> None:
     # Act: Request the add input page
-    response = client.get(ONBOARDING_ADD_COMPANY_URL, headers=htmx_request_headers)
+    response = client.get(ONBOARDING_ADD_COMPANY_URL, headers=HTMX_REQUEST_HEADERS)
 
     # Assert
     assert response.status_code == OK
@@ -73,7 +69,7 @@ def test_onboarding_start_tasks(client: TestClient) -> None:
     response = client.post(
         ONBOARDING_START_TASKS_URL,
         json={"companies": ["Acme Corp", "Example Inc"]},
-        headers=htmx_request_headers,
+        headers=HTMX_REQUEST_HEADERS,
     )
 
     # Assert
