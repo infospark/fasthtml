@@ -1,3 +1,6 @@
+# Set the maximum line length
+line-length = 200
+
 # Do not check markdown files
 exclude = ["*.md"]
 

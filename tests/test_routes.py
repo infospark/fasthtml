@@ -3,7 +3,13 @@ from collections.abc import Generator
 import pytest
 from starlette.testclient import TestClient
 
-from main import app  # Import your FastHTML app object
+from main import (
+    ONBOARDING_ADD_COMPANY_URL,
+    ONBOARDING_START_TASKS_URL,
+    ONBOARDING_STREAM_TASKS_STATUS_URL,
+    ONBOARDING_URL,
+    app,
+)  # Import your FastHTML app object
 
 htmx_request_headers = {"HX-Request": "true"}
 
@@ -17,46 +23,44 @@ def client() -> Generator[TestClient, None, None]:
         yield client
 
 
-def test_get_root(client: TestClient) -> None:
+def test_get_onboarding_page(client: TestClient) -> None:
     # When I invoke get_root() to get the root page
-    response = client.get("/")
-    # Then I should get a Fast Tag element
+    response = client.get(ONBOARDING_URL)
     assert response.status_code == OK
-    # And the root page should have a title of "Bulk Onboarding" and a heading of "Onboard Companies"
+
+    # The root page should have a title of "Bulk Onboarding" and a heading of "Onboard Companies"
     assert "Bulk Onboarding" in response.text
     assert "Onboard Companies" in response.text
 
 
-def test_dashboard_filters(client: TestClient) -> None:
+def test_get_onboarding_page_with_filters(client: TestClient) -> None:
     # Act: Request the dashboard with a specific 'status' filter
     response = client.get(
-        "/", params={"status": "pending"}, headers=htmx_request_headers
+        ONBOARDING_URL, params={"status": "pending"}, headers=htmx_request_headers
     )
 
-    # Assert
     assert response.status_code == OK
     # Check that the 'pending' state is reflected in the HTML
     assert "Bulk Onboarding" in response.text
 
 
-def test_get_stream(client: TestClient) -> None:
+def test_onboarding_stream_tasks_status(client: TestClient) -> None:
     # Act: Request the stream with a specific 'names' parameter
     response = client.get(
-        "/stream-bulk",
+        ONBOARDING_STREAM_TASKS_STATUS_URL,
         params={"names": "Acme Corp,Example Inc"},
         headers=htmx_request_headers,
     )
 
-    # Assert
     assert response.status_code == OK
     # Check that the 'Acme Corp' and 'Example Inc' names are reflected in the HTML
     assert "Acme Corp" in response.text
     assert "Example Inc" in response.text
 
 
-def test_get_add_input(client: TestClient) -> None:
+def test_onboarding_add_company(client: TestClient) -> None:
     # Act: Request the add input page
-    response = client.get("/add-input", headers=htmx_request_headers)
+    response = client.get(ONBOARDING_ADD_COMPANY_URL, headers=htmx_request_headers)
 
     # Assert
     assert response.status_code == OK
@@ -65,11 +69,11 @@ def test_get_add_input(client: TestClient) -> None:
     assert 'name="companies"' in response.text
 
 
-def test_start_bulk_task(client: TestClient) -> None:
+def test_onboarding_start_tasks(client: TestClient) -> None:
     # Act: Request the start bulk task page
     # Include HX-Request header to simulate HTMX request, so FastHTML returns just the fragment
     response = client.post(
-        "/start-bulk-task",
+        ONBOARDING_START_TASKS_URL,
         json={"companies": ["Acme Corp", "Example Inc"]},
         headers=htmx_request_headers,
     )
@@ -80,4 +84,7 @@ def test_start_bulk_task(client: TestClient) -> None:
     assert "div" in response.text
     assert "hx-ext='sse'" in response.text or 'hx-ext="sse"' in response.text
     # FastHTML URL-encodes the query string, so check for the encoded version
-    assert 'sse-connect="/stream-bulk?names=Acme+Corp%2CExample+Inc"' in response.text
+    assert (
+        f'sse-connect="{ONBOARDING_STREAM_TASKS_STATUS_URL}?names=Acme+Corp%2CExample+Inc"'
+        in response.text
+    )

@@ -70,18 +70,17 @@ def get_event_stream(names: str) -> EventStream:
 # --- ROUTES ---
 
 
-@rt("/")
-def get_root() -> FT:
-    return Main(cls="container")(
+def get_onboarding_container() -> FT:
+    return (
         Title("Bulk Onboarding"),
         H2("Onboard Companies"),
         Div(id="onboarding-container")(
-            Form(hx_post=start_bulk_task, hx_target="#onboarding-container")(
+            Form(hx_post=onboarding_start_tasks, hx_target="#onboarding-container")(
                 Div(id="input-list")(CompanyInput(), CompanyInput()),
                 # Clickable text to add more inputs
                 A(
                     "+ Add More",
-                    hx_get=get_add_input,
+                    hx_get=onboarding_add_input,
                     hx_target="#input-list",
                     hx_swap="beforeend",
                     style="cursor: pointer; display: block; margin-bottom: 20px;",
@@ -92,26 +91,39 @@ def get_root() -> FT:
     )
 
 
-@rt("/stream-bulk")
-async def get_stream(names: str) -> EventStream:
+ONBOARDING_URL = "/onboarding"
+ONBOARDING_ADD_COMPANY_URL = "/onboarding/add-company"
+ONBOARDING_START_TASKS_URL = "/onboarding/start-tasks"
+ONBOARDING_STREAM_TASKS_STATUS_URL = "/onboarding/stream-tasks-status"
+
+
+@rt(ONBOARDING_URL)
+def get_onboarding_page() -> FT:
+    return Main(cls="container")(get_onboarding_container())
+
+
+@rt(ONBOARDING_STREAM_TASKS_STATUS_URL)
+async def onboarding_stream_tasks_status(names: str) -> EventStream:
     return get_event_stream(names)
 
 
-@rt("/add-input")
-def get_add_input() -> FT:
+@rt(ONBOARDING_ADD_COMPANY_URL)
+def onboarding_add_input() -> FT:
     # Just returns one more input field to be appended
     return CompanyInput()
 
 
-@rt("/start-bulk-task")
-def start_bulk_task(companies: list[str]) -> FT:
+@rt(ONBOARDING_START_TASKS_URL)
+def onboarding_start_tasks(companies: list[str]) -> FT:
     # Filter out empty strings if the user left any blank
     valid_companies = [c for c in companies if c.strip()]
 
     # Pass the list to the stream via a query parameter or session
     # For simplicity here, we'll pass names as a comma-separated string in the URL
     names_param = ",".join(valid_companies)
-    stream_url = f"/stream-bulk?{urlencode({'names': names_param})}"
+    stream_url = (
+        f"{ONBOARDING_STREAM_TASKS_STATUS_URL}?{urlencode({'names': names_param})}"
+    )
     return Div(hx_ext="sse", sse_connect=stream_url)(
         Card(Div(sse_swap="message")("Preparing bulk onboarding..."))
     )
