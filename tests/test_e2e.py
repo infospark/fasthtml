@@ -1,6 +1,6 @@
 from playwright.sync_api import Page, expect
 
-from main import ONBOARDING_URL
+from onboarding import ONBOARDING_URL
 
 
 def test_onboarding_flow(page: Page, server: None) -> None:

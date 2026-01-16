@@ -3,12 +3,12 @@ from collections.abc import Generator
 import pytest
 from starlette.testclient import TestClient
 
-from main import (
+from main import app
+from onboarding import (
     ONBOARDING_ADD_COMPANY_URL,
     ONBOARDING_START_TASKS_URL,
     ONBOARDING_STREAM_TASKS_STATUS_URL,
     ONBOARDING_URL,
-    app,
 )  # Import your FastHTML app object
 
 htmx_request_headers = {"HX-Request": "true"}
@@ -35,9 +35,7 @@ def test_get_onboarding_page(client: TestClient) -> None:
 
 def test_get_onboarding_page_with_filters(client: TestClient) -> None:
     # Act: Request the dashboard with a specific 'status' filter
-    response = client.get(
-        ONBOARDING_URL, params={"status": "pending"}, headers=htmx_request_headers
-    )
+    response = client.get(ONBOARDING_URL, params={"status": "pending"}, headers=htmx_request_headers)
 
     assert response.status_code == OK
     # Check that the 'pending' state is reflected in the HTML
@@ -84,7 +82,4 @@ def test_onboarding_start_tasks(client: TestClient) -> None:
     assert "div" in response.text
     assert "hx-ext='sse'" in response.text or 'hx-ext="sse"' in response.text
     # FastHTML URL-encodes the query string, so check for the encoded version
-    assert (
-        f'sse-connect="{ONBOARDING_STREAM_TASKS_STATUS_URL}?names=Acme+Corp%2CExample+Inc"'
-        in response.text
-    )
+    assert f'sse-connect="{ONBOARDING_STREAM_TASKS_STATUS_URL}?names=Acme+Corp%2CExample+Inc"' in response.text
