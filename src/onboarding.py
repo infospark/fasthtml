@@ -33,7 +33,7 @@ def StatusStep(text: str, is_done: bool = False) -> FT:
     return Div(P(f"{icon} {text}"), cls="status-item")
 
 
-def get_event_stream(names: str) -> EventStream:
+def get_onboarding_event_stream(names: str) -> EventStream:
     company_list = names.split(",")
 
     async def msg_generator() -> AsyncIterator[str]:
@@ -92,7 +92,7 @@ def setup_onboarding_routes(app: FastHTML) -> None:
 
     @app.get(ONBOARDING_STREAM_TASKS_STATUS_URL)
     async def onboarding_stream_tasks_status(names: str) -> EventStream:
-        return get_event_stream(names)
+        return get_onboarding_event_stream(names)
 
     @app.get(ONBOARDING_ADD_COMPANY_URL)
     def onboarding_add_input() -> FT:
