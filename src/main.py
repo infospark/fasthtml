@@ -1,34 +1,20 @@
-import asyncio
-from collections.abc import AsyncIterable
+import logging
 
-from fasthtml.common import (
-    Html,
-    Script,
-    fast_app,
-    serve,
+from fasthtml.common import serve
+
+from app import process_chat, start_app
+
+# Configure logging for the application
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)8s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-from chat import setup_chat_routes
-from onboarding import setup_onboarding_routes
+# Create the app instance at the module level
+# This allows Uvicorn to find the 'app' object
+app = start_app(process_chat)
 
-HTMX_REQUEST_HEADERS = {"HX-Request": "true"}
-OK = 200
-
-MOCK_RESPONSE_TIME = 0.1
-
-# 1. Setup with SSE headers
-sse_hdrs = Html(Script(src="https://unpkg.com/htmx-ext-sse@2.2.1/sse.js"))
-app, rt = fast_app(hdrs=[sse_hdrs])
-
-
-async def process_chat(prompt: str) -> AsyncIterable[str]:
-    responses = ["hello", "world"]
-    for resp in responses:
-        await asyncio.sleep(MOCK_RESPONSE_TIME)
-        yield resp
-
-
-setup_onboarding_routes(app)
-setup_chat_routes(app, process_chat)
-
-serve()
+if __name__ == "__main__":
+    # Only block and serve if we are running this file directly
+    serve()

@@ -3,14 +3,14 @@ from collections.abc import Generator
 import pytest
 from starlette.testclient import TestClient
 
+from app import HTMX_REQUEST_HEADERS, OK, process_chat, start_app  # or wherever your FastHTML app is
 from chat import CHAT_PROMPT_URL, CHAT_RESPONSE_STREAM_URL
-from main import HTMX_REQUEST_HEADERS, OK, app  # or wherever your FastHTML app is
 
 
 @pytest.fixture
 def client() -> Generator[TestClient, None, None]:
     # The 'with' block ensures the app's lifespan events (if any) run
-    with TestClient(app) as client:
+    with TestClient(start_app(process_chat)) as client:
         yield client
 
 

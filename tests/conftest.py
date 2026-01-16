@@ -23,10 +23,7 @@ def server() -> Generator[None, None, None]:
     env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
 
     proc = subprocess.Popen(
-        ["python", "src/main.py"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,  # Combine stderr with stdout
-        text=True,
+        ["python", "-u", "src/main.py"],  # -u for unbuffered output
         cwd=project_root,
         env=env,
     )

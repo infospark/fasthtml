@@ -6,7 +6,7 @@ from main import process_chat
 
 
 @pytest.mark.asyncio
-async def test_process_chat_streaming_timing() -> None:
+async def test_process_chat() -> None:
     prompt = "Test prompt"
     received_chunks = []
     timestamps = []
