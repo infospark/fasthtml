@@ -19,7 +19,7 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable
             Title("Chat"),
             H2("Chat"),
             Div(id="chat-container")(
-                Form(hx_post=post_chat_prompt, hx_target="#response-box-content", hx_swap="innerHTML")(
+                Form(hx_post=post_chat_prompt, hx_target="#chat-container", hx_swap="outerHTML")(
                     Input(name="prompt"),
                     Button("Submit", id="submit-btn", cls="primary"),
                 ),
@@ -41,9 +41,19 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable
         stream_url = f"{CHAT_RESPONSE_STREAM_URL}?{urlencode({'prompt': prompt})}"
 
         # Return two divs - one for the sse and one for the response
-        return Div(id="chat-interaction-wrapper")(
-            Div(id="sse-container", hx_ext="sse", sse_connect=stream_url, sse_swap="message", hx_swap="beforeend", hx_target="#response-content")(),
-            Div(id="response-content")(),
+        return Div()(
+            Article()(
+                Span(
+                    prompt,
+                    id="readonly-prompt",
+                )
+            ),
+            Article()(
+                Div()(
+                    Div(id="sse-container", hx_ext="sse", sse_connect=stream_url, sse_swap="message", hx_swap="beforeend", hx_target="#response-content")(),
+                    Div(id="response-content")(),
+                )
+            ),
         )
 
     @app.get(CHAT_RESPONSE_STREAM_URL)
