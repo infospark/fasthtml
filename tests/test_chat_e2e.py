@@ -22,3 +22,5 @@ def test_chat_e2e(page: Page, server: None) -> None:
     expect(response_box).to_have_text("hello")
     # Expect the response box to contain "world"
     expect(response_box).to_have_text("hello world.")
+
+    expect(response_box).to_contain_text("End")

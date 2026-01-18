@@ -4,7 +4,7 @@ import logging
 from collections.abc import AsyncIterable, Callable
 from urllib.parse import urlencode
 
-from fasthtml.common import FT, H2, Article, Button, Card, Div, FastHTML, Form, Header, Input, Main, P, Span, StreamingResponse, Title
+from fasthtml.common import FT, H2, Article, Button, Div, FastHTML, Form, Input, Main, P, Span, StreamingResponse, Title
 
 from utils import format_for_sse
 
