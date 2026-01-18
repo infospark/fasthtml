@@ -22,7 +22,7 @@ sse_hdrs = Html(Script(src="https://unpkg.com/htmx-ext-sse@2.2.1/sse.js"))
 
 
 async def process_chat(prompt: str) -> AsyncIterable[str]:
-    responses = ["hello", "world"]
+    responses = ["hello ", "world."]
     for resp in responses:
         await asyncio.sleep(MOCK_RESPONSE_TIME)
         logging.info(f"process_chat:Yielding response: {resp}")
