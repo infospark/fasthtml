@@ -15,6 +15,7 @@ def test_chat_e2e(page: Page, server: None) -> None:
     # Type "Well hello prompty!"
     prompt_input.fill(initial_prompt)
     # Press the submit button
+    # TODO - user should be able to just press enter - don't really need to click the button
     page.click("button#submit-btn")
 
     # Once the submit button is clicked the input should be converted to a static text box
@@ -31,3 +32,5 @@ def test_chat_e2e(page: Page, server: None) -> None:
     expect(response_div).to_contain_text("hello world.")
 
     expect(response_div).to_contain_text("End")
+
+    # TODO - once the End of the previous response is reached a new input field should appear below the previous response
