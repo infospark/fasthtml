@@ -3,7 +3,7 @@ from playwright.sync_api import Page, expect
 from chat import CHAT_URL
 
 
-def test_chat_e2e(page: Page, server: None) -> None:
+def test_chat_e2e_ux(page: Page, server: None) -> None:
     # 1. Navigate to your local dev server
     # (Ensure your FastHTML app is running on 5001)
     page.goto(f"http://localhost:5001{CHAT_URL}")
@@ -14,9 +14,8 @@ def test_chat_e2e(page: Page, server: None) -> None:
     prompt_input = page.locator('input[name="prompt"]')
     # Type "Well hello prompty!"
     prompt_input.fill(initial_prompt)
-    # Press the submit button
-    # TODO - user should be able to just press enter - don't really need to click the button
-    page.click("button#submit-btn")
+    # User hits enter to submit the prompt
+    page.keyboard.press("Enter")
 
     # Once the submit button is clicked the input should be converted to a static text box
     # There should be a span element that contains the initial prompt
@@ -33,4 +32,6 @@ def test_chat_e2e(page: Page, server: None) -> None:
 
     expect(response_div).to_contain_text("End")
 
-    # TODO - once the End of the previous response is reached a new input field should appear below the previous response
+    # once the End of the previous response is reached a new input field should appear below the previous response
+    new_prompt_input = page.locator('input[name="prompt"]')
+    expect(new_prompt_input).to_be_visible()
