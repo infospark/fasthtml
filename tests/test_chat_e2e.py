@@ -19,7 +19,7 @@ def test_chat_e2e_ux(page: Page, server: None) -> None:
 
     # Once the submit button is clicked the input should be converted to a static text box
     # There should be a span element that contains the initial prompt
-    initial_prompt_span = page.locator("span", has_text=initial_prompt)
+    initial_prompt_span = page.locator(".user-message", has_text=initial_prompt)
     expect(initial_prompt_span).to_be_visible()
     # There should not be an input field with the name "prompt" anymore
     expect(prompt_input).not_to_be_visible()
@@ -35,3 +35,8 @@ def test_chat_e2e_ux(page: Page, server: None) -> None:
     # once the End of the previous response is reached a new input field should appear below the previous response
     new_prompt_input = page.locator('input[name="prompt"]')
     expect(new_prompt_input).to_be_visible()
+
+    # TODO - I should be able to type in a new prompt and submit it
+    # TODO - WHen I post again the whole conversation should be passed back to the server - via hidden input fields?
+    # TODO - Or should the whole conversation be in one form?§
+    # TODO - and it should be added to the conversation

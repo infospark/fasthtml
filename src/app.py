@@ -6,6 +6,7 @@ from fasthtml.common import (
     FastHTML,
     Html,
     Script,
+    Style,
     fast_app,
 )
 
@@ -29,8 +30,31 @@ async def process_chat(prompt: str) -> AsyncIterable[str]:
         yield resp
 
 
+chat_styles = Style("""
+    /* The container that spans the full width of the chat */
+    .message-row { display: flex; flex-direction: column; margin-bottom: 1.5rem; }
+    /* User prompt bubble aligned to the right */
+    .user-message {
+        align-self: flex-end;
+        background-color: #2f2f2f; /* Darker gray for user bubble */
+        color: #e3e3e3;
+        padding: 0.75rem 1.25rem;
+        border-radius: 1.5rem;
+        border-bottom-right-radius: 0.25rem; /* Makes it look like a speech bubble */
+        max-width: 80%;
+    }
+    /* AI response container on the left */
+    .ai-response {
+        align-self: flex-start;
+        width: 100%;
+        margin-top: 1rem;
+        color: white;
+    }
+""")
+
+
 def start_app(process_chat: Callable[[str], AsyncIterable[str]]) -> FastHTML:
-    app, rt = fast_app(hdrs=[sse_hdrs])
+    app, rt = fast_app(hdrs=[sse_hdrs, chat_styles, Script('document.documentElement.setAttribute("data-theme", "dark")')])
 
     setup_onboarding_routes(app)
     setup_chat_routes(app, process_chat)

@@ -21,7 +21,11 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable
         return (
             Div(id=MESSAGE_CONTAINER_ID)(
                 Form(hx_post=post_chat_prompt, hx_target=f"#{MESSAGE_CONTAINER_ID}", hx_swap="outerHTML")(
-                    Input(name="prompt"),
+                    Input(
+                        name="prompt",
+                        cls="secondary",  # This makes it gray in Dark Mode
+                        style="border-radius: 2rem;",
+                    ),
                     Button("Submit", id="submit-btn", cls="primary", hidden=True),
                 )
             ),
@@ -40,12 +44,9 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable
 
         # Return the original prompt - now read only - and two divs - one for the sse and one for the response
         return Div()(
-            Article()(
-                Span(
-                    prompt,
-                    id="readonly-prompt",
-                ),
-                Div(id="response-box")(
+            Div(cls="message-row")(
+                Div(prompt, cls="user-message"),
+                Div(id="response-box", cls="ai-response")(
                     Div(id=SSE_DIV_ID, hx_ext="sse", sse_connect=stream_url, sse_swap="message", hx_swap="beforeend", hx_target="#response-content")(),
                     Div(id="response-content")(),
                 ),
@@ -56,7 +57,6 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable
     async def get_chat_response_stream(prompt: str) -> StreamingResponse:
         logging.info(f"Getting chat response stream for prompt: {prompt}")
 
-        # TODO - aggregate the responses - adding each time not replacing the entire container
         async def sse_generator() -> AsyncIterable[str]:
             async for msg in process_chat(prompt):
                 # Manually do what EventStream does
