@@ -40,10 +40,14 @@ chat_styles = Style("""
         margin-top: 1rem;
         color: white;
     }
+    /* New message form */
+    .new-message-form {
+        margin-top: 3rem;
+    }
 """)
 
 
-def start_app(process_chat: Callable[[str], AsyncIterable[Failure | str | None]]) -> FastHTML:
+def start_app(process_chat: Callable[[str, str], AsyncIterable[Failure | str | None]]) -> FastHTML:
     app, rt = fast_app(hdrs=[sse_hdrs, chat_styles, Script('document.documentElement.setAttribute("data-theme", "dark")')])
 
     setup_onboarding_routes(app)

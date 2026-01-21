@@ -30,8 +30,9 @@ def split_string_into_words(s: str) -> list[str]:
     return re.findall(r"\S+\s*", s)
 
 
-async def parrot_chat(prompt: str) -> AsyncIterable[Failure | str | None]:
+async def parrot_chat(prompt: str, conversation: str = "") -> AsyncIterable[Failure | str | None]:
     # This chat function is used for testing and just returns the prompt split into words
+    logging.info(f"parrot_chat: Prompt: {prompt} Conversation: {conversation}")
     responses = split_string_into_words(prompt)
     for r in responses:
         await asyncio.sleep(MOCK_RESPONSE_TIME)
@@ -39,29 +40,31 @@ async def parrot_chat(prompt: str) -> AsyncIterable[Failure | str | None]:
         yield r
 
 
-async def gemini_chat(prompt: str, api_key_env_var: str = "GEMINI_API_KEY") -> AsyncIterable[Failure | str | None]:
+async def gemini_chat(prompt: str, conversation: str = "", api_key_env_var: str = "GEMINI_API_KEY") -> AsyncIterable[Failure | str | None]:
     gemini_api_key = os.getenv(api_key_env_var)
     if not gemini_api_key:
         yield Failure(f"{api_key_env_var} is not set")
     else:
         client = genai.Client(api_key=gemini_api_key)
 
+        content = f"{conversation}\nUser: {prompt}"
+
         # Use .aio to access asynchronous methods
         response = await client.aio.models.generate_content_stream(
             model=GEMINI_MODEL,
-            contents=prompt,
+            contents=content,
         )
 
         async for chunk in response:
             yield chunk.text
 
 
-def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable[Failure | str | None]]) -> None:
+def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIterable[Failure | str | None]]) -> None:
     def get_message_form(conversation: str = "") -> FT:
         logging.info("setup_chat_routes: Rendering the message form with conversation: {conversation}")
         return (
             Div(id=MESSAGE_CONTAINER_ID)(
-                Form(hx_post=post_chat_prompt, hx_target=f"#{MESSAGE_CONTAINER_ID}", hx_swap="outerHTML")(
+                Form(hx_post=post_chat_prompt, hx_target=f"#{MESSAGE_CONTAINER_ID}", hx_swap="outerHTML", cls="new-message-form")(
                     Input(
                         name="prompt",
                         cls="secondary",  # This makes it gray in Dark Mode
@@ -102,7 +105,7 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable
 
         async def sse_generator(conversation: str) -> AsyncIterable[str]:
             aggregated_response = ""
-            async for msg in process_chat(prompt):
+            async for msg in process_chat(prompt, conversation):
                 # Keep track of the whole response so far
                 if isinstance(msg, str):
                     aggregated_response += msg

@@ -31,11 +31,9 @@ def test_split_string_into_words() -> None:
 async def test_gemini_chat() -> None:
     prompt = "What is the capital of France?"
     received_chunks = []
-    timestamps = []
 
     # Iterate through the stream
     async for chunk in gemini_chat(prompt):
-        timestamps.append(time.perf_counter())
         received_chunks.append(chunk)
 
     list_of_chunks = list(received_chunks)
@@ -43,6 +41,18 @@ async def test_gemini_chat() -> None:
     assert all(isinstance(chunk, str) for chunk in list_of_chunks)
     # Check that paris appears somewhere in the response (slightly verbose due to mypy)
     assert "paris" in " ".join([c for c in list_of_chunks if isinstance(c, str)]).lower()
+
+
+@pytest.mark.asyncio
+async def test_gemini_chat_with_prompt_plus_conversation() -> None:
+    prompt = "Oh ok - what is the capital city?"
+    conversation = "User: which country has the best Bratwurst?\nAI: Germany"
+    received_chunks = []
+
+    async for chunk in gemini_chat(prompt, conversation):
+        received_chunks.append(chunk)
+
+    assert any("berlin" in chunk.lower() for chunk in received_chunks if isinstance(chunk, str))
 
 
 @pytest.mark.asyncio
