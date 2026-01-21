@@ -40,6 +40,9 @@ async def parrot_chat(prompt: str, conversation: str = "") -> AsyncIterable[Fail
         yield r
 
 
+STANDARD_PROMPT = "You are a helpful assistant that can answer questions. Please keep answers friendly but also reasonably consise. Offer follow up questions if appropriate."
+
+
 async def gemini_chat(prompt: str, conversation: str = "", api_key_env_var: str = "GEMINI_API_KEY") -> AsyncIterable[Failure | str | None]:
     gemini_api_key = os.getenv(api_key_env_var)
     if not gemini_api_key:
@@ -47,7 +50,7 @@ async def gemini_chat(prompt: str, conversation: str = "", api_key_env_var: str 
     else:
         client = genai.Client(api_key=gemini_api_key)
 
-        content = f"{conversation}\nUser: {prompt}"
+        content = f"{STANDARD_PROMPT}\n{conversation}\nUser: {prompt}"
 
         # Use .aio to access asynchronous methods
         response = await client.aio.models.generate_content_stream(
