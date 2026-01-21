@@ -80,9 +80,14 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIte
         )
 
     @app.get(CHAT_URL)
-    def get_chat_page() -> FT:
-        logging.info("Getting chat page")
-        return Main(cls="container")(Article(id=CONVERSATION_CONTAINER_ID)(get_message_form(conversation="Conversation begins here")))
+    def get_chat_page(conversation: str = "") -> FT:
+        logging.info(f"Getting chat page using conversation starter: {conversation}")
+        # if we got a conversation starter then show it in a response-box div
+        if conversation:
+            conversation_elements = [Div(cls="ai-response")(Div()(conversation))]
+        else:
+            conversation_elements = []
+        return Main(cls="container")(Article(id=CONVERSATION_CONTAINER_ID)(*conversation_elements, get_message_form(conversation=conversation)))
 
     @app.post(CHAT_PROMPT_URL)
     def post_chat_prompt(prompt: str, conversation: str = "") -> FT:
