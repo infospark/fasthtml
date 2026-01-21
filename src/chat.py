@@ -40,7 +40,7 @@ async def parrot_chat(prompt: str, conversation: str = "") -> AsyncIterable[Fail
         yield r
 
 
-STANDARD_PROMPT = "You are a helpful assistant that can answer questions. Please keep answers friendly but also reasonably consise. Offer follow up questions if appropriate."
+STANDARD_PROMPT = "You are a helpful assistant gathering employee feedback. Please be friendly and engaging, ask follow up questions if the user expresses interest in providing more feedback. Keep your responses fairly short - a few sentences max. Remember to try and be engaging - we want to undetstand the employee."
 
 
 async def gemini_chat(prompt: str, conversation: str = "", api_key_env_var: str = "GEMINI_API_KEY") -> AsyncIterable[Failure | str | None]:

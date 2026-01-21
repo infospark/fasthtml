@@ -44,6 +44,10 @@ chat_styles = Style("""
     .new-message-form {
         margin-top: 3rem;
     }
+    /* CHAT_RESPONSE_CONTENT_ID give some margin-top to the first response */
+    #response-content {
+        margin-top: 3rem;
+    }
 """)
 
 

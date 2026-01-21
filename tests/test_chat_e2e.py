@@ -2,6 +2,8 @@ from playwright.sync_api import Page, expect
 
 from chat import CHAT_URL
 
+# TODO - PASS A STARTER CONVERSATION TO THE TEST
+
 
 def test_chat_e2e_ux(page: Page, server: None) -> None:
     # 1. Navigate to your local dev server
