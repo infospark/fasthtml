@@ -3,7 +3,7 @@ import logging
 from fasthtml.common import serve
 
 from app import start_app
-from chat import parrot_chat
+from chat import gemini_chat
 
 # Configure logging for the application
 logging.basicConfig(
@@ -12,8 +12,8 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-# Create the app instance at the module level
-app = start_app(parrot_chat)
+# Create the app instance at the module level using live Gemini chat
+app = start_app(gemini_chat)
 
 if __name__ == "__main__":
     # Only call serve (which is a blocking call) if we are running this file directly
