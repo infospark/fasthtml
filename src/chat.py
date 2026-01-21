@@ -1,13 +1,15 @@
 # This is your core logic function
 import asyncio
 import logging
+import os
 import re
 from collections.abc import AsyncIterable, Callable
 from urllib.parse import urlencode
 
 from fasthtml.common import FT, Article, Button, Div, FastHTML, Form, Input, Main, Span, StreamingResponse, Textarea
+from google import genai
 
-from utils import format_for_sse
+from utils import Failure, format_for_sse
 
 CHAT_URL = "/chat"
 CHAT_PROMPT_URL = "/chat/prompt"
@@ -19,6 +21,8 @@ CONVERSATION_CONTAINER_ID = "conversation-container"
 CHAT_RESPONSE_CONTENT_ID = "response-content"
 
 MOCK_RESPONSE_TIME = 0.5
+
+GEMINI_MODEL = "gemini-2.0-flash"
 
 
 def split_string_into_words(s: str) -> list[str]:
@@ -33,6 +37,23 @@ async def parrot_chat(prompt: str) -> AsyncIterable[str]:
         await asyncio.sleep(MOCK_RESPONSE_TIME)
         logging.info(f"process_chat:Yielding response: {r}")
         yield r
+
+
+async def gemini_chat(prompt: str, api_key_env_var: str = "GEMINI_API_KEY") -> AsyncIterable[Failure | str | None]:
+    gemini_api_key = os.getenv(api_key_env_var)
+    if not gemini_api_key:
+        yield Failure(f"{api_key_env_var} is not set")
+    else:
+        client = genai.Client(api_key=gemini_api_key)
+
+        # Use .aio to access asynchronous methods
+        response = await client.aio.models.generate_content_stream(
+            model=GEMINI_MODEL,
+            contents=prompt,
+        )
+
+        async for chunk in response:
+            yield chunk.text
 
 
 def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable[str]]) -> None:
