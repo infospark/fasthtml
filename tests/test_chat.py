@@ -17,9 +17,10 @@ async def test_parrot_chat() -> None:
         timestamps.append(time.perf_counter())
         received_chunks.append(chunk)
 
+    list_of_chunks = list(received_chunks)
     # Check that the response parrots the prompt in one word chunks
-    assert any("Assert " in chunk for chunk in received_chunks if isinstance(chunk, str))
-    assert any("prompt." in chunk for chunk in received_chunks if isinstance(chunk, str))
+    assert any("Assert " in chunk for chunk in list_of_chunks if isinstance(chunk, str))
+    assert any("prompt." in chunk for chunk in list_of_chunks if isinstance(chunk, str))
 
 
 def test_split_string_into_words() -> None:
@@ -37,10 +38,11 @@ async def test_gemini_chat() -> None:
         timestamps.append(time.perf_counter())
         received_chunks.append(chunk)
 
+    list_of_chunks = list(received_chunks)
     # Check that all received chunks are strings
     assert all(isinstance(chunk, str) for chunk in received_chunks)
     # Check that paris appears somewhere in the response (slightly verbose due to mypy)
-    assert "paris" in " ".join([c for c in received_chunks if isinstance(c, str)]).lower()
+    assert "paris" in " ".join([c for c in list_of_chunks if isinstance(c, str)]).lower()
 
 
 @pytest.mark.asyncio
@@ -54,5 +56,6 @@ async def test_gemini_chat_with_invalid_api_key_env_var() -> None:
         timestamps.append(time.perf_counter())
         received_chunks.append(chunk)
 
+    list_of_chunks = list(received_chunks)
     # Check that the response is a failure
-    assert all(isinstance(chunk, Failure) for chunk in received_chunks)
+    assert all(isinstance(chunk, Failure) for chunk in list_of_chunks)
