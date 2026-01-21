@@ -1,5 +1,3 @@
-import asyncio
-import logging
 from collections.abc import AsyncIterable, Callable
 
 from fasthtml.common import (
@@ -16,18 +14,9 @@ from onboarding import setup_onboarding_routes
 HTMX_REQUEST_HEADERS = {"HX-Request": "true"}
 OK = 200
 
-MOCK_RESPONSE_TIME = 0.5
 
 # 1. Setup with SSE headers
 sse_hdrs = Html(Script(src="https://unpkg.com/htmx-ext-sse@2.2.1/sse.js"))
-
-
-async def process_chat(prompt: str) -> AsyncIterable[str]:
-    responses = ["hello ", "world."]
-    for resp in responses:
-        await asyncio.sleep(MOCK_RESPONSE_TIME)
-        logging.info(f"process_chat:Yielding response: {resp}")
-        yield resp
 
 
 chat_styles = Style("""

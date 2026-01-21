@@ -6,7 +6,8 @@ import pytest
 import uvicorn
 from fasthtml.common import FastHTML
 
-from app import process_chat, start_app  # Import your factory and logic
+from app import start_app  # Import your factory and logic
+from chat import parrot_chat
 
 
 class ThreadedUvicorn(threading.Thread):
@@ -33,7 +34,7 @@ class ThreadedUvicorn(threading.Thread):
 def server() -> Generator[None, None, None]:
     # 1. Initialize the app instance using your factory
     # This is where dependency injection happens for your tests!
-    app = start_app(process_chat)
+    app = start_app(parrot_chat)
 
     # 2. Start Uvicorn in a background thread
     server_thread = ThreadedUvicorn(app, port=5001)

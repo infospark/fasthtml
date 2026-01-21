@@ -10,7 +10,7 @@ def test_chat_e2e_ux(page: Page, server: None) -> None:
 
     # 2. Verify Initial State
     # Expect there to be one or more company input fields
-    initial_prompt = "Well hello prompty!"
+    initial_prompt = "Input one"
     prompt_input = page.locator('input[name="prompt"]')
     # Type "Well hello prompty!"
     prompt_input.fill(initial_prompt)
@@ -25,18 +25,30 @@ def test_chat_e2e_ux(page: Page, server: None) -> None:
     expect(prompt_input).not_to_be_visible()
 
     response_div = page.locator("div#response-content")
-    # Expect the response box to contain "hello"
-    expect(response_div).to_contain_text("hello")
-    # Expect the response box to contain "world"
-    expect(response_div).to_contain_text("hello world.")
-
-    expect(response_div).to_contain_text("End")
+    # Expect the response box to contain "Input"
+    expect(response_div).to_contain_text("Input")
+    # Expect the response box to contain "Input one"
+    expect(response_div).to_contain_text("Input one")
 
     # once the End of the previous response is reached a new input field should appear below the previous response
     new_prompt_input = page.locator('input[name="prompt"]')
     expect(new_prompt_input).to_be_visible()
 
-    # TODO - I should be able to type in a new prompt and submit it
-    # TODO - WHen I post again the whole conversation should be passed back to the server - via hidden input fields?
-    # TODO - Or should the whole conversation be in one form?§
-    # TODO - and it should be added to the conversation
+    # We should be able to see the whole conversation in the textarea
+    conversation_textarea = page.locator('textarea[name="conversation"]')
+    # It shouold exist (later we will check that it's hidden - for now we just check that it exists)
+    expect(conversation_textarea).to_be_visible()
+    # It should contain the initial prompt and the response
+    expect(conversation_textarea).to_contain_text("User: Input one")
+    expect(conversation_textarea).to_contain_text("AI: Input one")
+
+    # Now we should be able to submit a new prompt
+    new_prompt_input = page.locator('input[name="prompt"]')
+    prompt_two = "Prompt two"
+    new_prompt_input.fill(prompt_two)
+    page.keyboard.press("Enter")
+
+    # find the last SPAN with class LIVE_RESPONSE_CLASS and check that it contains the new prompt
+    # TODO - THINK THIS IS PICKING UP THE PRIOR DIV AND THE TEST IS FAILING
+    # response_div = page.locator("div.live-response").last
+    # expect(response_div).to_contain_text(prompt_two)

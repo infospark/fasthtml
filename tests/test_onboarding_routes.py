@@ -3,7 +3,8 @@ from collections.abc import Generator
 import pytest
 from starlette.testclient import TestClient
 
-from app import HTMX_REQUEST_HEADERS, OK, process_chat, start_app
+from app import HTMX_REQUEST_HEADERS, OK, start_app
+from chat import parrot_chat
 from onboarding import (
     ONBOARDING_ADD_COMPANY_URL,
     ONBOARDING_START_TASKS_URL,
@@ -15,7 +16,7 @@ from onboarding import (
 @pytest.fixture
 def client() -> Generator[TestClient, None, None]:
     # The 'with' block ensures the app's lifespan events (if any) run
-    with TestClient(start_app(process_chat)) as client:
+    with TestClient(start_app(parrot_chat)) as client:
         yield client
 
 

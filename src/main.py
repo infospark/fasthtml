@@ -2,7 +2,8 @@ import logging
 
 from fasthtml.common import serve
 
-from app import process_chat, start_app
+from app import start_app
+from chat import parrot_chat
 
 # Configure logging for the application
 logging.basicConfig(
@@ -12,7 +13,7 @@ logging.basicConfig(
 )
 
 # Create the app instance at the module level
-app = start_app(process_chat)
+app = start_app(parrot_chat)
 
 if __name__ == "__main__":
     # Only call serve (which is a blocking call) if we are running this file directly
