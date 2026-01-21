@@ -71,7 +71,7 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIte
                         style="border-radius: 2rem;",
                     ),
                     Button("Submit", id="submit-btn", cls="primary", hidden=True),
-                    Textarea(conversation, name="conversation"),
+                    Textarea(conversation, name="conversation", hidden=True),
                 )
             ),
         )

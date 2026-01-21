@@ -37,7 +37,7 @@ def test_chat_e2e_ux(page: Page, server: None) -> None:
     # We should be able to see the whole conversation in the textarea
     conversation_textarea = page.locator('textarea[name="conversation"]')
     # It shouold exist (later we will check that it's hidden - for now we just check that it exists)
-    expect(conversation_textarea).to_be_visible()
+    expect(conversation_textarea).to_be_hidden()
     # It should contain the initial prompt and the response
     expect(conversation_textarea).to_contain_text("User: Input one")
     expect(conversation_textarea).to_contain_text("AI: Input one")
