@@ -28,6 +28,11 @@ mypy .
 ruff check .
 ```
 
+**Environment variables:**
+Note: This project relies on Gemini via the genai package
+Please set up a .env file in the root of this project with an API Key:
+GEMINI_API_KEY = "<<YOUR_API_KEY>>"
+
 **Run all tests with coverage:**
 ```bash
 export PYTHONPATH=$PYTHONPATH:$(pwd)/src

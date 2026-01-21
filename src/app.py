@@ -10,6 +10,7 @@ from fasthtml.common import (
 
 from chat import setup_chat_routes
 from onboarding import setup_onboarding_routes
+from utils import Failure
 
 HTMX_REQUEST_HEADERS = {"HX-Request": "true"}
 OK = 200
@@ -42,7 +43,7 @@ chat_styles = Style("""
 """)
 
 
-def start_app(process_chat: Callable[[str], AsyncIterable[str]]) -> FastHTML:
+def start_app(process_chat: Callable[[str], AsyncIterable[Failure | str | None]]) -> FastHTML:
     app, rt = fast_app(hdrs=[sse_hdrs, chat_styles, Script('document.documentElement.setAttribute("data-theme", "dark")')])
 
     setup_onboarding_routes(app)

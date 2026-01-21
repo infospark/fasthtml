@@ -30,8 +30,8 @@ def split_string_into_words(s: str) -> list[str]:
     return re.findall(r"\S+\s*", s)
 
 
-async def parrot_chat(prompt: str) -> AsyncIterable[str]:
-    # Split on puncuation and whitespace but keep the punctuation and whitespace in the response
+async def parrot_chat(prompt: str) -> AsyncIterable[Failure | str | None]:
+    # This chat function is used for testing and just returns the prompt split into words
     responses = split_string_into_words(prompt)
     for r in responses:
         await asyncio.sleep(MOCK_RESPONSE_TIME)
@@ -56,7 +56,7 @@ async def gemini_chat(prompt: str, api_key_env_var: str = "GEMINI_API_KEY") -> A
             yield chunk.text
 
 
-def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable[str]]) -> None:
+def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable[Failure | str | None]]) -> None:
     def get_message_form(conversation: str = "") -> FT:
         logging.info("setup_chat_routes: Rendering the message form with conversation: {conversation}")
         return (
@@ -104,7 +104,11 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str], AsyncIterable
             aggregated_response = ""
             async for msg in process_chat(prompt):
                 # Keep track of the whole response so far
-                aggregated_response += msg
+                if isinstance(msg, str):
+                    aggregated_response += msg
+                elif isinstance(msg, Failure):
+                    logging.error(f"get_chat_response_stream: Error: {msg.message}")
+                    break
                 # Yield each chunk of the response so the browser can render it incrementally
                 yield format_for_sse(Span(msg))
             await asyncio.sleep(0.5)

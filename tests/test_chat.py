@@ -18,8 +18,8 @@ async def test_parrot_chat() -> None:
         received_chunks.append(chunk)
 
     # Check that the response parrots the prompt in one word chunks
-    assert any("Assert " in chunk for chunk in received_chunks)
-    assert any("prompt." in chunk for chunk in received_chunks)
+    assert any("Assert " in chunk for chunk in received_chunks if isinstance(chunk, str))
+    assert any("prompt." in chunk for chunk in received_chunks if isinstance(chunk, str))
 
 
 def test_split_string_into_words() -> None:
