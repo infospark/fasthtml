@@ -40,7 +40,7 @@ async def test_gemini_chat() -> None:
 
     list_of_chunks = list(received_chunks)
     # Check that all received chunks are strings
-    assert all(isinstance(chunk, str) for chunk in received_chunks)
+    assert all(isinstance(chunk, str) for chunk in list_of_chunks)
     # Check that paris appears somewhere in the response (slightly verbose due to mypy)
     assert "paris" in " ".join([c for c in list_of_chunks if isinstance(c, str)]).lower()
 
