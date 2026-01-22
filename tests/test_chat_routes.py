@@ -1,10 +1,11 @@
 from collections.abc import Generator
 
 import pytest
+from bs4 import BeautifulSoup
 from starlette.testclient import TestClient
 
 from app import HTMX_REQUEST_HEADERS, OK, start_app  # or wherever your FastHTML app is
-from chat import CHAT_PROMPT_URL, CHAT_RESPONSE_STREAM_URL, parrot_chat
+from chat import CHAT_PROMPT_URL, CHAT_RESPONSE_STREAM_URL, CHAT_URL, parrot_chat
 
 
 @pytest.fixture
@@ -33,3 +34,16 @@ def test_chat_prompt(client: TestClient) -> None:
     assert "prompt=Hello+world" in response.text
     # url encode the conversation
     assert "conversation=Conversation+begins+here" in response.text
+
+
+def test_get_chat_page(client: TestClient) -> None:
+    response = client.get(
+        CHAT_URL,
+        params={"conversation": "Conversation begins here"},
+    )
+    assert response.status_code == OK
+    # Check there's a div with class ai-response that contains the conversation starter
+    soup = BeautifulSoup(response.text, "html.parser")
+    ai_response_div = soup.select_one("div.ai-response")
+    assert ai_response_div is not None
+    assert "Conversation begins here" in ai_response_div.get_text()

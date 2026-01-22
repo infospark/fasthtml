@@ -111,26 +111,40 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIte
     async def get_chat_response_stream(prompt: str, conversation: str) -> StreamingResponse:
         logging.info(f"get_chat_response_stream: Getting chat response stream for prompt: {prompt} and conversation: {conversation}")
 
-        async def sse_generator(conversation: str) -> AsyncIterable[str]:
-            aggregated_response = ""
-            async for msg in process_chat(prompt, conversation):
-                # Keep track of the whole response so far
-                if isinstance(msg, str):
-                    aggregated_response += msg
-                elif isinstance(msg, Failure):
-                    logging.error(f"get_chat_response_stream: Error: {msg.message}")
-                    break
-                # Yield each chunk of the response so the browser can render it incrementally
-                yield format_for_sse(Span(msg))
-            await asyncio.sleep(0.5)
-            logging.info("Chat response stream completed")
-            # We need to update the conversation with the final response from the process_chat function
-            conversation += f"\nAI: {aggregated_response}"
+        return StreamingResponse(
+            get_sse_chat_generator(
+                process_chat_function=process_chat,
+                get_message_form_function=get_message_form,
+                prompt=prompt,
+                conversation=conversation,
+            ),
+            media_type="text/event-stream",
+        )
 
-            # add a new message form - use htmx to target beforeend of the conversation container
-            yield format_for_sse(Div(hx_target=f"#{CONVERSATION_CONTAINER_ID}", hx_swap="beforeend")(Div()(get_message_form(conversation=conversation))))
 
-            # replace the sse container with an emtpy one to close down the SSE connection
-            yield format_for_sse(Div(id=SSE_DIV_ID, hx_swap_oob="true")())
+async def get_sse_chat_generator(
+    process_chat_function: Callable[[str, str], AsyncIterable[Failure | str | None]],
+    get_message_form_function: Callable[[str], FT],
+    prompt: str,
+    conversation: str,
+) -> AsyncIterable[str]:
+    aggregated_response = ""
+    async for msg in process_chat_function(prompt, conversation):
+        # Keep track of the whole response so far
+        if isinstance(msg, str):
+            aggregated_response += msg
+        elif isinstance(msg, Failure):
+            logging.error(f"get_chat_response_stream: Error: {msg.message}")
+            break
+        # Yield each chunk of the response so the browser can render it incrementally
+        yield format_for_sse(Span(msg))
+    await asyncio.sleep(0.5)
+    logging.info("Chat response stream completed")
+    # We need to update the conversation with the final response from the process_chat function
+    conversation += f"\nAI: {aggregated_response}"
 
-        return StreamingResponse(sse_generator(conversation=conversation), media_type="text/event-stream")
+    # add a new message form - use htmx to target beforeend of the conversation container
+    yield format_for_sse(Div(hx_target=f"#{CONVERSATION_CONTAINER_ID}", hx_swap="beforeend")(Div()(get_message_form_function(conversation))))
+
+    # replace the sse container with an emtpy one to close down the SSE connection
+    yield format_for_sse(Div(id=SSE_DIV_ID, hx_swap_oob="true")())

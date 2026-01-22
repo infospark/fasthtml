@@ -6,7 +6,7 @@ echo "Running mypy..."
 mypy .
 
 echo "Running ruff..."
-ruff check .
+ruff check . --fix
 
 echo "Running pytest..."
 export PYTHONPATH=$PYTHONPATH:$(pwd)/src
