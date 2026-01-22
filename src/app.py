@@ -9,11 +9,13 @@ from fasthtml.common import (
 )
 
 from chat import setup_chat_routes
+from dragadoc import setup_dragadrop_routes
 from onboarding import setup_onboarding_routes
 from utils import Failure
 
 HTMX_REQUEST_HEADERS = {"HX-Request": "true"}
 OK = 200
+
 
 
 # 1. Setup with SSE headers
@@ -56,5 +58,6 @@ def start_app(process_chat: Callable[[str, str], AsyncIterable[Failure | str | N
 
     setup_onboarding_routes(app)
     setup_chat_routes(app, process_chat)
+    setup_dragadrop_routes(app)
 
     return app
