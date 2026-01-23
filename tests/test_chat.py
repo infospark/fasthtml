@@ -83,7 +83,14 @@ async def test_get_sse_chat_generator() -> None:
         return Div("Hello world")
 
     all_messages = []
-    async for msg in get_sse_chat_generator(process_chat_function=process_chat, get_message_form_function=get_message_form, prompt="Hello world", conversation="Conversation begins here"):
+    sse_div_id = f"{SSE_DIV_ID}-test"
+    async for msg in get_sse_chat_generator(
+        process_chat_function=process_chat,
+        get_message_form_function=get_message_form,
+        prompt="Hello world",
+        conversation="Conversation begins here",
+        sse_div_id=sse_div_id,
+    ):
         all_messages.append(msg)
     assert len(all_messages) > 0
     # Ensure the the first message contains the text "Hello world"
@@ -93,7 +100,7 @@ async def test_get_sse_chat_generator() -> None:
     # Ensure the last message contains a div with the ID SSE_DIV_ID - this is swapping out the SSE connection with an empty div
     last_message = all_messages[-1]
     soup = BeautifulSoup(last_message, "html.parser")
-    sse_div = soup.select_one(f"div#{SSE_DIV_ID}")
+    sse_div = soup.select_one(f"div#{sse_div_id}")
     assert sse_div is not None
 
 
@@ -106,12 +113,19 @@ async def test_get_sse_chat_generator_failure_from_process_chat() -> None:
         return Div("Hello world")
 
     all_messages = []
-    async for msg in get_sse_chat_generator(process_chat_function=process_chat, get_message_form_function=get_message_form, prompt="Hello world", conversation="Conversation begins here"):
+    sse_div_id = f"{SSE_DIV_ID}-test"
+    async for msg in get_sse_chat_generator(
+        process_chat_function=process_chat,
+        get_message_form_function=get_message_form,
+        prompt="Hello world",
+        conversation="Conversation begins here",
+        sse_div_id=sse_div_id,
+    ):
         all_messages.append(msg)
     # we should still get the last message
     assert len(all_messages) > 0
     # the last message should contain a div with the ID SSE_DIV_ID
     last_message = all_messages[-1]
     soup = BeautifulSoup(last_message, "html.parser")
-    sse_div = soup.select_one(f"div#{SSE_DIV_ID}")
+    sse_div = soup.select_one(f"div#{sse_div_id}")
     assert sse_div is not None
