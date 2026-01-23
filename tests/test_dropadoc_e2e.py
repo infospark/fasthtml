@@ -1,9 +1,8 @@
 from pathlib import Path
 
-import pytest
 from playwright.sync_api import Page, expect
 
-from dragadoc import DROPADOC_URL
+from dropadoc import DROPADOC_URL
 
 # Get the directory where this test_file.py is located
 current_dir = Path(__file__).parent
@@ -19,8 +18,6 @@ def test_onboarding_e2e(page: Page, server: None) -> None:
     upload_btn = drop_box.locator("#upload-btn")
     expect(upload_btn).to_have_text("Select Files")
 
-# TODO - THIS TEST IS NOT WORKING - THE FILE IS NOT BEING UPLOADED - IMPLEMENTATION REQD
-@pytest.mark.skip(reason="Not implemented")
 def test_onboarding_e2e_upload_file(page: Page, server: None) -> None:
     page.goto(f"http://localhost:5001{DROPADOC_URL}")
 

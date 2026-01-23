@@ -9,7 +9,7 @@ from fasthtml.common import (
 )
 
 from chat import setup_chat_routes
-from dragadoc import setup_dragadrop_routes
+from dropadoc import setup_dragadrop_routes
 from onboarding import setup_onboarding_routes
 from utils import Failure
 
