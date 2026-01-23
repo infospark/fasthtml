@@ -1,13 +1,9 @@
 import logging
 
-from dotenv import load_dotenv
 from fasthtml.common import serve
 
 from app import start_app
 from chat import gemini_chat
-
-# Load .env values into process env for local runs/debugging.
-load_dotenv()
 
 # Configure logging for the application
 logging.basicConfig(

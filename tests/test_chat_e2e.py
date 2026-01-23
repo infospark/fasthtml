@@ -24,9 +24,9 @@ def test_chat_e2e_ux(page: Page, server: None) -> None:
     initial_prompt_span = page.locator(".user-message", has_text=initial_prompt)
     expect(initial_prompt_span).to_be_visible()
     # There should not be an input field with the name "prompt" anymore
-    #expect(prompt_input).not_to_be_visible()
+    expect(prompt_input).not_to_be_visible()
 
-    response_div = page.locator("div.response-content").last
+    response_div = page.locator("div#response-content")
     # Expect the response box to contain "Input"
     expect(response_div).to_contain_text("Input")
     # Expect the response box to contain "Input one"
@@ -42,7 +42,7 @@ def test_chat_e2e_ux(page: Page, server: None) -> None:
     expect(conversation_textarea).to_be_hidden()
     # It should contain the initial prompt and the response
     expect(conversation_textarea).to_contain_text("User: Input one")
-
+    expect(conversation_textarea).to_contain_text("AI: Input one")
 
     # Now we should be able to submit a new prompt
     new_prompt_input = page.locator('input[name="prompt"]')
