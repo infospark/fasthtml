@@ -1,3 +1,7 @@
+TAKE THIS DOC AND HAVE THE LLM TURN IT INTO AN ACTION PLAN?
+
+Finding the right diagram tool?
+
 Using the model
 ---------------
 When I ask a question of the kg i see the 'neuron fire' - i can see the context it used to answer the question but in graphical form
