@@ -2,14 +2,14 @@
 import asyncio
 import logging
 import os
-import re
 from collections.abc import AsyncIterable, Callable
 from urllib.parse import urlencode
 
 from fasthtml.common import FT, Article, Button, Div, FastHTML, Form, Input, Main, Span, StreamingResponse, Textarea
 from google import genai
 
-from utils import Failure, format_for_sse
+from styles import AI_RESPONSE_CLASSES, CONTENT_WRAPPER_CLASSES, INPUT_CLASSES, MESSAGE_ROW_CLASSES, NEW_MESSAGE_FORM_CLASSES, PAGE_CONTAINER_CLASSES, RESPONSE_CONTENT_CLASSES, USER_MESSAGE_CLASSES
+from utils import Failure, format_for_sse, split_string_into_words
 
 CHAT_URL = "/chat"
 CHAT_PROMPT_URL = "/chat/prompt"
@@ -25,9 +25,7 @@ MOCK_RESPONSE_TIME = 0.5
 GEMINI_MODEL = "gemini-2.0-flash"
 
 
-def split_string_into_words(s: str) -> list[str]:
-    # Split on puncuation and whitespace but keep the punctuation and whitespace in the response
-    return re.findall(r"\S+\s*", s)
+
 
 
 async def parrot_chat(prompt: str, conversation: str = "") -> AsyncIterable[Failure | str | None]:
@@ -65,18 +63,16 @@ async def gemini_chat(prompt: str, conversation: str = "", api_key_env_var: str 
 def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIterable[Failure | str | None]]) -> None:
     def get_message_form(conversation: str = "") -> FT:
         logging.info("setup_chat_routes: Rendering the message form with conversation: {conversation}")
-        return (
-            Div(id=MESSAGE_CONTAINER_ID)(
-                Form(hx_post=post_chat_prompt, hx_target=f"#{MESSAGE_CONTAINER_ID}", hx_swap="outerHTML", cls="new-message-form")(
-                    Input(
-                        name="prompt",
-                        cls="secondary",  # This makes it gray in Dark Mode
-                        style="border-radius: 2rem;",
-                    ),
-                    Button("Submit", id="submit-btn", cls="primary", hidden=True),
-                    Textarea(conversation, name="conversation", hidden=True),
-                )
-            ),
+        return Div(id=MESSAGE_CONTAINER_ID)(
+            Form(hx_post=post_chat_prompt, hx_target=f"#{MESSAGE_CONTAINER_ID}", hx_swap="outerHTML", cls=NEW_MESSAGE_FORM_CLASSES)(
+                Input(
+                    name="prompt",
+                    cls=INPUT_CLASSES,
+                    placeholder="Type your message...",
+                ),
+                Button("Submit", id="submit-btn", cls="hidden", hidden=True),
+                Textarea(conversation, name="conversation", hidden=True),
+            )
         )
 
     @app.get(CHAT_URL)
@@ -84,10 +80,14 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIte
         logging.info(f"Getting chat page using conversation starter: {conversation}")
         # if we got a conversation starter then show it in a response-box div
         if conversation:
-            conversation_elements = [Div(cls="ai-response")(Div()(conversation))]
+            conversation_elements = [Div(cls=AI_RESPONSE_CLASSES)(Div()(conversation))]
         else:
             conversation_elements = []
-        return Main(cls="container")(Article(id=CONVERSATION_CONTAINER_ID)(*conversation_elements, get_message_form(conversation=conversation)))
+        return Main(cls=PAGE_CONTAINER_CLASSES)(
+            Div(cls=CONTENT_WRAPPER_CLASSES)(
+                Article(id=CONVERSATION_CONTAINER_ID, cls="space-y-4")(*conversation_elements, get_message_form(conversation=conversation))
+            )
+        )
 
     @app.post(CHAT_PROMPT_URL)
     def post_chat_prompt(prompt: str, conversation: str = "") -> FT:
@@ -98,11 +98,11 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIte
         stream_url = f"{CHAT_RESPONSE_STREAM_URL}?{urlencode({'prompt': prompt, 'conversation': conversation})}"
         # Return the original prompt - now read only - and two divs - one for the sse and one for the response
         return Div()(
-            Div(cls="message-row")(
-                Div(prompt, cls="user-message"),
-                Div(id="response-box", cls="ai-response")(
+            Div(cls=MESSAGE_ROW_CLASSES)(
+                Div(prompt, cls=USER_MESSAGE_CLASSES),
+                Div(id="response-box", cls=AI_RESPONSE_CLASSES)(
                     Div(id=SSE_DIV_ID, hx_ext="sse", sse_connect=stream_url, sse_swap="message", hx_swap="beforeend", hx_target=f"#{CHAT_RESPONSE_CONTENT_ID}")(),
-                    Div(id=CHAT_RESPONSE_CONTENT_ID)(),
+                    Div(id=CHAT_RESPONSE_CONTENT_ID, cls=RESPONSE_CONTENT_CLASSES)(),
                 ),
             ),
         )

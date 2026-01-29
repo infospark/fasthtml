@@ -5,51 +5,40 @@ from pathlib import Path
 
 from fasthtml.common import FT, Button, Div, FastHTML, Form, Input, Main, P, Script, UploadFile
 
+from styles import BUTTON_PRIMARY_CLASSES, CONTENT_WRAPPER_CLASSES, DROP_ZONE_CLASSES, PAGE_CONTAINER_CLASSES
+
 DROPADOC_URL = "/dropadoc"
 DROPADOC_UPLOAD_URL = "/dropadoc/upload"
+DROPADOC_FORM_ID = "dropadoc-form"
+UPLOAD_STATUS_ID = "upload-status"
 INBOX_DIR = Path(__file__).resolve().parent.parent / "inbox"
 
 
 def get_dropadoc_container() -> FT:
-    # Define the styling for the drop zone
-    # 'flex-1' and 'min-h-[60vh]' ensure it occupies significant vertical space
-    drop_zone_style = (
-        "border: 3px dashed #ccc; "
-        "border-radius: 20px; "
-        "display: flex; "
-        "flex-direction: column; "
-        "align-items: center; "
-        "justify-content: center; "
-        "padding: 40px; "
-        "margin: 20px; "
-        "min-height: 60vh; " # Fills 60% of the viewport height
-        "cursor: pointer; "
-        "transition: border-color 0.3s;"
-    )
-
-    return Main(cls="container")(
-        Div(id="drop_box", style=drop_zone_style)(
+    return Main(cls=PAGE_CONTAINER_CLASSES)(
+        Div(cls=CONTENT_WRAPPER_CLASSES)(
+        Div(id="drop_box", cls=DROP_ZONE_CLASSES)(
             Form(
-                id="dropadoc-form",
+                id=DROPADOC_FORM_ID,
                 hx_post=DROPADOC_UPLOAD_URL,
-                hx_target="#upload-status",
+                hx_target=f"#{UPLOAD_STATUS_ID}",
                 hx_trigger="change",
                 hx_encoding="multipart/form-data",
                 enctype="multipart/form-data",
+                cls="flex flex-col items-center",
             )(
-                P("Drag & Drop your documents here", cls="text-muted"),
-                P("or", cls="text-xs"),
+                P("Drag & Drop your documents here", cls="text-gray-400 text-xl mb-2"),
+                P("or", cls="text-gray-500 text-sm mb-4"),
                 Input(
                     type="file",
                     name="file",
                     id="file-input",
                     multiple=True,
                     hidden=True,
-                    style="margin-bottom: 20px;",
                 ),
-                Button("Select Files", id="upload-btn", cls="primary", type="button"),
+                Button("Select Files", id="upload-btn", cls=f"{BUTTON_PRIMARY_CLASSES} px-8", type="button"),
             ),
-            Div(id="upload-status"),
+            Div(id=UPLOAD_STATUS_ID, cls="mt-6 text-center"),
             Script(
                 """
                 const dropBox = document.getElementById("drop_box");
@@ -69,12 +58,13 @@ def get_dropadoc_container() -> FT:
                 """
             ),
         )
+        )
     )
 
 def setup_dropadoc_routes(app: FastHTML) -> None:
     @app.get(DROPADOC_URL)
     def get_dropadoc_page() -> FT:
-        return Main(cls="container")(get_dropadoc_container())
+        return get_dropadoc_container()
 
     @app.post(DROPADOC_UPLOAD_URL)
     def dropadoc_upload(file: list[UploadFile]) -> FT:
@@ -89,7 +79,7 @@ def setup_dropadoc_routes(app: FastHTML) -> None:
                 shutil.copyfileobj(upload.file, out)
             saved_names.append(safe_name)
         if not saved_names:
-            return P("No files selected")
+            return P("No files selected", cls="text-red-400")
         if len(saved_names) == 1:
-            return P(f"Successfully uploaded {saved_names[0]}")
-        return P(f"Successfully uploaded {len(saved_names)} files")
+            return P(f"✅ Successfully uploaded {saved_names[0]}", cls="text-green-400 font-semibold")
+        return P(f"✅ Successfully uploaded {len(saved_names)} files", cls="text-green-400 font-semibold")
