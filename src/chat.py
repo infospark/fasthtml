@@ -99,7 +99,7 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIte
         # Return the original prompt - now read only - and two divs - one for the sse and one for the response
         return Div()(
             Div(cls=MESSAGE_ROW_CLASSES)(
-                Div(prompt, cls=USER_MESSAGE_CLASSES),
+                Div(prompt, cls=USER_MESSAGE_CLASSES, data_testid="user-message"),
                 Div(id="response-box", cls=AI_RESPONSE_CLASSES)(
                     Div(id=SSE_DIV_ID, hx_ext="sse", sse_connect=stream_url, sse_swap="message", hx_swap="beforeend", hx_target=f"#{CHAT_RESPONSE_CONTENT_ID}")(),
                     Div(id=CHAT_RESPONSE_CONTENT_ID, cls=RESPONSE_CONTENT_CLASSES)(),

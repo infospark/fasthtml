@@ -20,9 +20,9 @@ def test_chat_e2e_ux(page: Page, server: None) -> None:
     page.keyboard.press("Enter")
 
     # Once the submit button is clicked the input should be converted to a static text box
-    # There should be a span element that contains the initial prompt
-    initial_prompt_span = page.locator(".user-message", has_text=initial_prompt)
-    expect(initial_prompt_span).to_be_visible()
+    # There should be a div element that contains the initial prompt
+    initial_prompt_div = page.get_by_test_id("user-message")
+    expect(initial_prompt_div).to_have_text(initial_prompt)
     # There should not be an input field with the name "prompt" anymore
     expect(prompt_input).not_to_be_visible()
 
