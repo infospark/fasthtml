@@ -71,7 +71,7 @@ def get_dropadoc_container() -> FT:
         )
     )
 
-def setup_dragadrop_routes(app: FastHTML) -> None:
+def setup_dropadoc_routes(app: FastHTML) -> None:
     @app.get(DROPADOC_URL)
     def get_dropadoc_page() -> FT:
         return Main(cls="container")(get_dropadoc_container())

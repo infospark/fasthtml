@@ -30,3 +30,6 @@ src/measures_test_data/measures_test_output/
 
 # Coverage files
 .coverage*
+
+# Not even sure what this is - doesn't look like I should check it in tho
+src/.sesskey
