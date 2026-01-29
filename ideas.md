@@ -12,7 +12,7 @@ Building a model of an organisation in the 'brain' of the application
 
 Could we use a nano banana to make a chart from within our app so you would just say could you please plot this data against these different axis and it just draws a chart for you in a certain style?
 
-Buildig the model
+Building the model
 -----------------
 
 When you drag a document into the diagram the first thing it does is show a picture of the document and then show itself breaking the document down and then things start to pop out of the document into the wider diagram 

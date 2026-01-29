@@ -9,7 +9,6 @@ from fasthtml.common import (
     H4,
     A,
     Button,
-    Card,
     Div,
     EventStream,
     FastHTML,
@@ -20,17 +19,18 @@ from fasthtml.common import (
     Title,
 )
 
+from styles import BUTTON_PRIMARY_CLASSES, COMPANY_INPUT_CLASSES, CONTENT_WRAPPER_CLASSES, ONBOARDING_CONTAINER_CLASSES, PAGE_CONTAINER_CLASSES
 from utils import format_for_sse
 
 
 def CompanyInput() -> FT:
     # Using 'name="companies"' for all inputs creates a list in the backend
-    return Input(name="companies", placeholder="Company Name", style="margin-bottom: 10px;")
+    return Input(name="companies", placeholder="Company Name", cls=COMPANY_INPUT_CLASSES)
 
 
 def StatusStep(text: str, is_done: bool = False) -> FT:
     icon = "✅" if is_done else "⏳"
-    return Div(P(f"{icon} {text}"), cls="status-item")
+    return Div(P(f"{icon} {text}"), cls="py-2 text-gray-200")
 
 
 def get_onboarding_event_stream(names: str) -> EventStream:
@@ -47,9 +47,9 @@ def get_onboarding_event_stream(names: str) -> EventStream:
         logging.info(f"Finished {name}")
         yield format_for_sse(
             # We replace the entire container by ID
-            Div(id="onboarding-container", hx_swap_oob="true")(
-                H4("🚀 All company tasks completed!"),
-                P("The connection is now closed."),
+            Div(id="onboarding-container", hx_swap_oob="true", cls=ONBOARDING_CONTAINER_CLASSES)(
+                H4("🚀 All company tasks completed!", cls="text-2xl font-bold mb-4 text-green-400"),
+                P("The connection is now closed.", cls="text-gray-300"),
             )
         )
 
@@ -69,26 +69,28 @@ def setup_onboarding_routes(app: FastHTML) -> None:
     def get_onboarding_container() -> FT:
         return (
             Title("Bulk Onboarding"),
-            H2("Onboard Companies"),
-            Div(id="onboarding-container")(
-                Form(hx_post=onboarding_start_tasks, hx_target="#onboarding-container")(
-                    Div(id="input-list")(CompanyInput(), CompanyInput()),
+            H2("Onboard Companies", cls="text-3xl font-bold mb-6 text-white"),
+            Div(id="onboarding-container", cls=ONBOARDING_CONTAINER_CLASSES)(
+                Form(hx_post=onboarding_start_tasks, hx_target="#onboarding-container", cls="space-y-4")(
+                    Div(id="input-list", cls="space-y-2")(CompanyInput(), CompanyInput()),
                     # Clickable text to add more inputs
                     A(
                         "+ Add More",
                         hx_get=onboarding_add_input,
                         hx_target="#input-list",
                         hx_swap="beforeend",
-                        style="cursor: pointer; display: block; margin-bottom: 20px;",
+                        cls="text-blue-400 hover:text-blue-300 cursor-pointer block mb-5",
                     ),
-                    Button("Submit All", id="submit-btn", cls="primary"),
+                    Button("Submit All", id="submit-btn", cls=f"w-full {BUTTON_PRIMARY_CLASSES}"),
                 )
             ),
         )
 
     @app.get(ONBOARDING_URL)
     def get_onboarding_page() -> FT:
-        return Main(cls="container")(get_onboarding_container())
+        return Main(cls=PAGE_CONTAINER_CLASSES)(
+            Div(cls=CONTENT_WRAPPER_CLASSES)(get_onboarding_container())
+        )
 
     @app.get(ONBOARDING_STREAM_TASKS_STATUS_URL)
     async def onboarding_stream_tasks_status(names: str) -> EventStream:
@@ -108,4 +110,4 @@ def setup_onboarding_routes(app: FastHTML) -> None:
         # For simplicity here, we'll pass names as a comma-separated string in the URL
         names_param = ",".join(valid_companies)
         stream_url = f"{ONBOARDING_STREAM_TASKS_STATUS_URL}?{urlencode({'names': names_param})}"
-        return Div(hx_ext="sse", sse_connect=stream_url)(Card(Div(sse_swap="message")("Preparing bulk onboarding...")))
+        return Div(hx_ext="sse", sse_connect=stream_url, cls=ONBOARDING_CONTAINER_CLASSES)(Div(sse_swap="message", cls="space-y-2")("Preparing bulk onboarding..."))
