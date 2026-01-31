@@ -5,7 +5,18 @@ from pathlib import Path
 
 from fasthtml.common import FT, Button, Div, FastHTML, Form, Input, Main, P, Script, UploadFile
 
-from styles import BUTTON_PRIMARY_CLASSES, CONTENT_WRAPPER_CLASSES, DROP_ZONE_CLASSES, PAGE_CONTAINER_CLASSES
+from styles import (
+    BUTTON_PRIMARY_CLASSES,
+    CONTENT_WRAPPER_CLASSES,
+    DROP_ZONE_CLASSES,
+    DROP_ZONE_INNER_CLASSES,
+    DROP_ZONE_OR_CLASSES,
+    DROP_ZONE_TEXT_CLASSES,
+    PAGE_CONTAINER_CLASSES,
+    UPLOAD_ERROR_CLASSES,
+    UPLOAD_STATUS_CLASSES,
+    UPLOAD_SUCCESS_CLASSES,
+)
 
 DROPADOC_URL = "/dropadoc"
 DROPADOC_UPLOAD_URL = "/dropadoc/upload"
@@ -25,10 +36,10 @@ def get_dropadoc_container() -> FT:
                 hx_trigger="change",
                 hx_encoding="multipart/form-data",
                 enctype="multipart/form-data",
-                cls="flex flex-col items-center",
+                cls=DROP_ZONE_INNER_CLASSES,
             )(
-                P("Drag & Drop your documents here", cls="text-gray-400 text-xl mb-2"),
-                P("or", cls="text-gray-500 text-sm mb-4"),
+                P("Drag & Drop your documents here", cls=DROP_ZONE_TEXT_CLASSES),
+                P("or", cls=DROP_ZONE_OR_CLASSES),
                 Input(
                     type="file",
                     name="file",
@@ -38,7 +49,7 @@ def get_dropadoc_container() -> FT:
                 ),
                 Button("Select Files", id="upload-btn", cls=f"{BUTTON_PRIMARY_CLASSES} px-8", type="button"),
             ),
-            Div(id=UPLOAD_STATUS_ID, cls="mt-6 text-center"),
+            Div(id=UPLOAD_STATUS_ID, cls=UPLOAD_STATUS_CLASSES),
             Script(
                 """
                 const dropBox = document.getElementById("drop_box");
@@ -79,7 +90,7 @@ def setup_dropadoc_routes(app: FastHTML) -> None:
                 shutil.copyfileobj(upload.file, out)
             saved_names.append(safe_name)
         if not saved_names:
-            return P("No files selected", cls="text-red-400")
+            return P("No files selected", cls=UPLOAD_ERROR_CLASSES)
         if len(saved_names) == 1:
-            return P(f"✅ Successfully uploaded {saved_names[0]}", cls="text-green-400 font-semibold")
-        return P(f"✅ Successfully uploaded {len(saved_names)} files", cls="text-green-400 font-semibold")
+            return P(f"✅ Successfully uploaded {saved_names[0]}", cls=UPLOAD_SUCCESS_CLASSES)
+        return P(f"✅ Successfully uploaded {len(saved_names)} files", cls=UPLOAD_SUCCESS_CLASSES)

@@ -4,8 +4,7 @@ from onboarding import ONBOARDING_URL
 
 
 def test_onboarding_e2e(page: Page, server: None) -> None:
-    # 1. Navigate to your local dev server
-    # (Ensure your FastHTML app is running on 5001)
+    # 1. Navigate to the local dev server
     page.goto(f"http://localhost:5001{ONBOARDING_URL}")
 
     # 2. Verify Initial State

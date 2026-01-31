@@ -8,7 +8,18 @@ from urllib.parse import urlencode
 from fasthtml.common import FT, Article, Button, Div, FastHTML, Form, Input, Main, Span, StreamingResponse, Textarea
 from google import genai
 
-from styles import AI_RESPONSE_CLASSES, CONTENT_WRAPPER_CLASSES, INPUT_CLASSES, MESSAGE_ROW_CLASSES, NEW_MESSAGE_FORM_CLASSES, PAGE_CONTAINER_CLASSES, RESPONSE_CONTENT_CLASSES, USER_MESSAGE_CLASSES
+from styles import (
+    AI_RESPONSE_CLASSES,
+    CONTENT_WRAPPER_CLASSES,
+    CONVERSATION_CONTAINER_CLASSES,
+    HIDDEN_BUTTON_CLASSES,
+    INPUT_CLASSES,
+    MESSAGE_ROW_CLASSES,
+    NEW_MESSAGE_FORM_CLASSES,
+    PAGE_CONTAINER_CLASSES,
+    RESPONSE_CONTENT_CLASSES,
+    USER_MESSAGE_CLASSES,
+)
 from utils import Failure, format_for_sse, split_string_into_words
 
 CHAT_URL = "/chat"
@@ -70,7 +81,7 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIte
                     cls=INPUT_CLASSES,
                     placeholder="Type your message...",
                 ),
-                Button("Submit", id="submit-btn", cls="hidden", hidden=True),
+                Button("Submit", id="submit-btn", cls=HIDDEN_BUTTON_CLASSES, hidden=True),
                 Textarea(conversation, name="conversation", hidden=True),
             )
         )
@@ -80,12 +91,12 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIte
         logging.info(f"Getting chat page using conversation starter: {conversation}")
         # if we got a conversation starter then show it in a response-box div
         if conversation:
-            conversation_elements = [Div(cls=AI_RESPONSE_CLASSES)(Div()(conversation))]
+            conversation_elements = [Div(cls=AI_RESPONSE_CLASSES, data_testid="ai-response")(Div()(conversation))]
         else:
             conversation_elements = []
         return Main(cls=PAGE_CONTAINER_CLASSES)(
             Div(cls=CONTENT_WRAPPER_CLASSES)(
-                Article(id=CONVERSATION_CONTAINER_ID, cls="space-y-4")(*conversation_elements, get_message_form(conversation=conversation))
+                Article(id=CONVERSATION_CONTAINER_ID, cls=CONVERSATION_CONTAINER_CLASSES)(*conversation_elements, get_message_form(conversation=conversation))
             )
         )
 

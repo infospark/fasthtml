@@ -44,6 +44,6 @@ def test_get_chat_page(client: TestClient) -> None:
     assert response.status_code == OK
     # Check there's a div with class ai-response that contains the conversation starter
     soup = BeautifulSoup(response.text, "html.parser")
-    ai_response_div = soup.select_one("div.ai-response")
+    ai_response_div = soup.select_one("[data-testid='ai-response']")
     assert ai_response_div is not None
     assert "Conversation begins here" in ai_response_div.get_text()

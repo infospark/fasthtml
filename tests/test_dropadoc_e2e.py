@@ -9,7 +9,7 @@ current_dir = Path(__file__).parent
 project_root = current_dir.parent
 
 def test_onboarding_e2e(page: Page, server: None) -> None:
-    # 1. Navigate to your local dev server
+    # 1. Navigate to the local dev server
     page.goto(f"http://localhost:5001{DROPADOC_URL}")
 
     drop_box = page.locator("#drop_box")
