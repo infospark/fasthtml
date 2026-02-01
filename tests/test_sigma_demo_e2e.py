@@ -18,7 +18,7 @@ def has_edge(page: Page, edge: Edge) -> bool:
 
 def add_node(page: Page, node_id: str) -> Failure | Success:
     try:
-        eval_result = page.evaluate("""() =>
+        page.evaluate("""() =>
             window.graph.addNode('node4', {
                 label: 'Node 4',
                 x: 0,
@@ -66,6 +66,7 @@ def test_sigma_demo_inject_node_using_js(page: Page, server: None) -> None:
 
 # TODO - work out how to pass nodes and edges into the page - have it display them - be able to test them
 # So SSE would be sitting waiting for events to be given to it
+# SO do that first - set up SSE on the server side and just start streaming messages from server to browser
 # On the server side I need some kind of generator that will emit new Node/Edges - for now it can just iterate over a list that I pass to it from the test
 # Later something else will generate those events
 # Remember - I can run page.evaluate on the server side when testing - i cannot run page.evaluate on some users' browser!
