@@ -50,7 +50,3 @@ def test_chat_e2e_ux(page: Page, server: None) -> None:
     new_prompt_input.fill(prompt_two)
     page.keyboard.press("Enter")
 
-    # find the last SPAN with class LIVE_RESPONSE_CLASS and check that it contains the new prompt
-    # TODO - THINK THIS IS PICKING UP THE PRIOR DIV AND THE TEST IS FAILING
-    # response_div = page.locator("div.live-response").last
-    # expect(response_div).to_contain_text(prompt_two)

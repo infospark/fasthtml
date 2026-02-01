@@ -1,5 +1,6 @@
 from playwright.sync_api import Page, expect
 
+from data_types import Failure, Success
 from sigma_demo import SIGMA_DEMO_URL, Edge
 
 
@@ -15,8 +16,23 @@ def has_edge(page: Page, edge: Edge) -> bool:
     )
     return eval_result is True # the evaluate could return anything - just check for truthiness
 
+def add_node(page: Page, node_id: str) -> Failure | Success:
+    try:
+        eval_result = page.evaluate("""() =>
+            window.graph.addNode('node4', {
+                label: 'Node 4',
+                x: 0,
+                y: 0,
+                size: 10,
+                color: 'blue'
+            })""")
+        return Success()
+    except Exception as e:
+        return Failure(f"Got error adding node: {e}")
+
+
 def test_sigma_demo(page: Page, server: None) -> None:
-    # Navigate to the local dev server
+    # Navigate to the sigma demo page
     page.goto(f"http://localhost:5001{SIGMA_DEMO_URL}")
 
     # Ensure there is an h1 element with the text Sigma Demo
@@ -38,3 +54,20 @@ def test_sigma_demo(page: Page, server: None) -> None:
     expected_edges = [Edge("node1", "node2"), Edge("node2", "node3"), Edge("node3", "node1")]
     for edge in expected_edges:
         assert has_edge(page, edge), f"Edge {edge} should exist"
+
+def test_sigma_demo_inject_node_using_js(page: Page, server: None) -> None:
+    # Navigate to the sigma demo page
+    page.goto(f"http://localhost:5001{SIGMA_DEMO_URL}")
+
+    # dynamically add node 4 to the graph
+    assert add_node(page, "node4")
+    # check that the node exists
+    assert has_node(page, "node4")
+
+# TODO - work out how to pass nodes and edges into the page - have it display them - be able to test them
+# So SSE would be sitting waiting for events to be given to it
+# On the server side I need some kind of generator that will emit new Node/Edges - for now it can just iterate over a list that I pass to it from the test
+# Later something else will generate those events
+# Remember - I can run page.evaluate on the server side when testing - i cannot run page.evaluate on some users' browser!
+# TODO - start looking at layouts - how do I build that TDD??
+# TODO - mimic a user interacting with the graph - say moving node? ensure we pick that up too
