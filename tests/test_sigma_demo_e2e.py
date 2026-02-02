@@ -1,3 +1,4 @@
+import pytest
 from playwright.sync_api import Page, expect
 
 from data_types import Failure, Success
@@ -5,16 +6,14 @@ from sigma_demo import SIGMA_DEMO_URL, Edge
 
 
 def has_node(page: Page, node_id: str) -> bool:
-    eval_result = page.evaluate(
-        f"() => window.graph.hasNode('{node_id}')"
-    )
-    return eval_result is True # the evaluate could return anything - just check for truthiness
+    eval_result = page.evaluate(f"() => window.graph.hasNode('{node_id}')")
+    return eval_result is True  # the evaluate could return anything - just check for truthiness
+
 
 def has_edge(page: Page, edge: Edge) -> bool:
-    eval_result = page.evaluate(
-        f"() => window.graph.hasEdge('{edge.source}', '{edge.target}')"
-    )
-    return eval_result is True # the evaluate could return anything - just check for truthiness
+    eval_result = page.evaluate(f"() => window.graph.hasEdge('{edge.source}', '{edge.target}')")
+    return eval_result is True  # the evaluate could return anything - just check for truthiness
+
 
 def add_node(page: Page, node_id: str) -> Failure | Success:
     try:
@@ -55,6 +54,7 @@ def test_sigma_demo(page: Page, server: None) -> None:
     for edge in expected_edges:
         assert has_edge(page, edge), f"Edge {edge} should exist"
 
+
 def test_sigma_demo_inject_node_using_js(page: Page, server: None) -> None:
     # Navigate to the sigma demo page
     page.goto(f"http://localhost:5001{SIGMA_DEMO_URL}")
@@ -63,6 +63,16 @@ def test_sigma_demo_inject_node_using_js(page: Page, server: None) -> None:
     assert add_node(page, "node4")
     # check that the node exists
     assert has_node(page, "node4")
+
+
+@pytest.mark.skip("Not implemented")
+def test_sigma_demo_node_passed_via_data_model(page: Page, server: None) -> None:
+    # Navigate to the sigma demo page
+    page.goto(f"http://localhost:5001{SIGMA_DEMO_URL}")
+
+    # new_node = "node5"
+    # Pass the new node to the data model
+
 
 # TODO - work out how to pass nodes and edges into the page - have it display them - be able to test them
 # So SSE would be sitting waiting for events to be given to it
