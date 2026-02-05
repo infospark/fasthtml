@@ -1,6 +1,6 @@
 from fasthtml.common import FT, to_xml
 
-from onboarding import CompanyInput, StatusStep
+from onboarding_routes import CompanyInput, StatusStep
 
 
 def test_company_input() -> None:

@@ -7,7 +7,7 @@ import uvicorn
 from fasthtml.common import FastHTML
 
 from app import start_app  # Import your factory and logic
-from chat import parrot_chat
+from chat_routes import parrot_chat
 
 
 class ThreadedUvicorn(threading.Thread):

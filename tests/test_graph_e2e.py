@@ -2,7 +2,7 @@ import pytest
 from playwright.sync_api import Page, expect
 
 from data_types import Failure, Success
-from graph import GRAPH_URL
+from graph_routes import GRAPH_URL
 
 
 def page_has_node(page: Page, node_id: str) -> bool:

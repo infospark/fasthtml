@@ -5,7 +5,7 @@ import pytest
 from bs4 import BeautifulSoup
 from fasthtml.common import FT, Div
 
-from chat import SSE_DIV_ID, gemini_chat, get_sse_chat_generator, parrot_chat, split_string_into_words
+from chat_routes import SSE_DIV_ID, gemini_chat, get_sse_chat_generator, parrot_chat, split_string_into_words
 from utils import Failure
 
 

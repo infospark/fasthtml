@@ -1,6 +1,6 @@
 from playwright.sync_api import Page, expect
 
-from chat import CHAT_URL
+from chat_routes import CHAT_URL
 
 # TODO - PASS A STARTER CONVERSATION TO THE TEST
 

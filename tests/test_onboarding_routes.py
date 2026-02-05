@@ -4,8 +4,8 @@ import pytest
 from starlette.testclient import TestClient
 
 from app import HTMX_REQUEST_HEADERS, OK, start_app
-from chat import parrot_chat
-from onboarding import (
+from chat_routes import parrot_chat
+from onboarding_routes import (
     ONBOARDING_ADD_COMPANY_URL,
     ONBOARDING_START_TASKS_URL,
     ONBOARDING_STREAM_TASKS_STATUS_URL,

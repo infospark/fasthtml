@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from starlette.testclient import TestClient
 
 from app import HTMX_REQUEST_HEADERS, OK, start_app  # or wherever your FastHTML app is
-from chat import CHAT_PROMPT_URL, CHAT_RESPONSE_STREAM_URL, CHAT_URL, parrot_chat
+from chat_routes import CHAT_PROMPT_URL, CHAT_RESPONSE_STREAM_URL, CHAT_URL, parrot_chat
 
 
 @pytest.fixture

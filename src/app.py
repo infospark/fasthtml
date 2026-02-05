@@ -6,11 +6,11 @@ from fasthtml.common import (
     fast_app,
 )
 
-from chat import setup_chat_routes
+from chat_routes import setup_chat_routes
 from data_types import GraphManager
 from dropadoc import setup_dropadoc_routes
-from graph import setup_graph_routes
-from onboarding import setup_onboarding_routes
+from graph_routes import setup_graph_routes
+from onboarding_routes import setup_onboarding_routes
 from styles import BODY_CLASSES, HTML_CLASSES
 from utils import Failure
 
