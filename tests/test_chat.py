@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from fasthtml.common import FT, Div
 
 from chat_routes import SSE_DIV_ID, gemini_chat, get_sse_chat_generator, parrot_chat, split_string_into_words
-from utils import Failure
+from data_types import Failure
 
 
 @pytest.mark.asyncio

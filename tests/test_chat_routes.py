@@ -4,7 +4,7 @@ import pytest
 from bs4 import BeautifulSoup
 from starlette.testclient import TestClient
 
-from app import HTMX_REQUEST_HEADERS, OK, start_app  # or wherever your FastHTML app is
+from app import HTMX_REQUEST_HEADERS, OK_CODE, start_app  # or wherever your FastHTML app is
 from chat_routes import CHAT_PROMPT_URL, CHAT_RESPONSE_STREAM_URL, CHAT_URL, parrot_chat
 
 
@@ -25,7 +25,7 @@ def test_chat_prompt(client: TestClient) -> None:
     )
 
     # Assert
-    assert response.status_code == OK
+    assert response.status_code == OK_CODE
     # Check that the response is a Fast Tag element (not wrapped in full HTML page)
     assert "div" in response.text
     assert "hx-ext='sse'" in response.text or 'hx-ext="sse"' in response.text
@@ -41,7 +41,7 @@ def test_get_chat_page(client: TestClient) -> None:
         CHAT_URL,
         params={"conversation": "Conversation begins here"},
     )
-    assert response.status_code == OK
+    assert response.status_code == OK_CODE
     # Check there's a div with class ai-response that contains the conversation starter
     soup = BeautifulSoup(response.text, "html.parser")
     ai_response_div = soup.select_one("[data-testid='ai-response']")

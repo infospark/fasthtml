@@ -1,4 +1,4 @@
-from data_types import Edge, Graph, GraphID, GraphManager, Node, NodeId
+from data_types import Edge, Failure, Graph, GraphID, GraphManager, Node, NodeId
 
 
 def test_create_graph() -> None:
@@ -18,6 +18,7 @@ def test_graph_manager_create_graph() -> None:
 
     # check that we can get the graph back
     retrieved_graph = graph_manager.get_graph(graph.graph_id)
+    assert isinstance(retrieved_graph, Graph)
     assert retrieved_graph.graph_id == graph.graph_id
     assert retrieved_graph.nodes == graph.nodes
     assert retrieved_graph.edges == graph.edges
@@ -33,6 +34,13 @@ def test_graph_manager_create_graph_with_graph() -> None:
 
     # check that we can get the graph back
     retrieved_graph = graph_manager.get_graph(graph.graph_id)
+    assert isinstance(retrieved_graph, Graph)
     assert retrieved_graph.graph_id == graph.graph_id
     assert retrieved_graph.nodes == graph.nodes
     assert retrieved_graph.edges == graph.edges
+
+
+def test_graph_manager_get_graph_not_found() -> None:
+    graph_manager = GraphManager()
+    retrieved_graph = graph_manager.get_graph(GraphID("graph1"))
+    assert isinstance(retrieved_graph, Failure)

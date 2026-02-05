@@ -36,7 +36,7 @@ GEMINI_API_KEY = "<<YOUR_API_KEY>>"
 **Run all tests with coverage:**
 ```bash
 export PYTHONPATH=$PYTHONPATH:$(pwd)/src
-pytest --cov=src
+pytest --cov=src --cov-report=term-missing
 ```
 
 **Run tests in headless mode (for CI):**

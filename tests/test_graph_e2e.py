@@ -35,7 +35,7 @@ def test_sigma_demo(page: Page, server: None) -> None:
     page.goto(f"http://localhost:5001{GRAPH_URL}?session_id=test_graph")
 
     # Ensure there is an h1 element with the text Sigma Demo
-    expect(page.locator("h1")).to_have_text("Sigma Demo")
+    expect(page.locator("h1")).to_have_text("Graph Demo")
 
     # Check that window.graph and window.renderer are exposed
     graph_exists = page.evaluate("() => typeof window.graph !== 'undefined'")

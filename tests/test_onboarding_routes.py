@@ -3,14 +3,14 @@ from collections.abc import Generator
 import pytest
 from starlette.testclient import TestClient
 
-from app import HTMX_REQUEST_HEADERS, OK, start_app
+from app import HTMX_REQUEST_HEADERS, OK_CODE, start_app
 from chat_routes import parrot_chat
 from onboarding_routes import (
     ONBOARDING_ADD_COMPANY_URL,
     ONBOARDING_START_TASKS_URL,
     ONBOARDING_STREAM_TASKS_STATUS_URL,
     ONBOARDING_URL,
-)  # Import your FastHTML app object
+)
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def client() -> Generator[TestClient, None, None]:
 def test_get_onboarding_page(client: TestClient) -> None:
     # When I invoke get_root() to get the root page
     response = client.get(ONBOARDING_URL)
-    assert response.status_code == OK
+    assert response.status_code == OK_CODE
 
     # The root page should have a title of "Bulk Onboarding" and a heading of "Onboard Companies"
     assert "Bulk Onboarding" in response.text
@@ -34,7 +34,7 @@ def test_get_onboarding_page_with_filters(client: TestClient) -> None:
     # Act: Request the dashboard with a specific 'status' filter
     response = client.get(ONBOARDING_URL, params={"status": "pending"}, headers=HTMX_REQUEST_HEADERS)
 
-    assert response.status_code == OK
+    assert response.status_code == OK_CODE
     # Check that the 'pending' state is reflected in the HTML
     assert "Bulk Onboarding" in response.text
 
@@ -47,7 +47,7 @@ def test_onboarding_stream_tasks_status(client: TestClient) -> None:
         headers=HTMX_REQUEST_HEADERS,
     )
 
-    assert response.status_code == OK
+    assert response.status_code == OK_CODE
     # Check that the 'Acme Corp' and 'Example Inc' names are reflected in the HTML
     assert "Acme Corp" in response.text
     assert "Example Inc" in response.text
@@ -58,7 +58,7 @@ def test_onboarding_add_company(client: TestClient) -> None:
     response = client.get(ONBOARDING_ADD_COMPANY_URL, headers=HTMX_REQUEST_HEADERS)
 
     # Assert
-    assert response.status_code == OK
+    assert response.status_code == OK_CODE
     # Check that the response is a Fast Tag element
     assert "input" in response.text
     assert 'name="companies"' in response.text
@@ -74,7 +74,7 @@ def test_onboarding_start_tasks(client: TestClient) -> None:
     )
 
     # Assert
-    assert response.status_code == OK
+    assert response.status_code == OK_CODE
     # Check that the response is a Fast Tag element (not wrapped in full HTML page)
     assert "div" in response.text
     assert "hx-ext='sse'" in response.text or 'hx-ext="sse"' in response.text

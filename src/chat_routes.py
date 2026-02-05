@@ -8,6 +8,7 @@ from urllib.parse import urlencode
 from fasthtml.common import FT, Article, Button, Div, FastHTML, Form, Input, Main, Span, StreamingResponse, Textarea
 from google import genai
 
+from data_types import Failure
 from styles import (
     AI_RESPONSE_CLASSES,
     CONTENT_WRAPPER_CLASSES,
@@ -20,7 +21,7 @@ from styles import (
     RESPONSE_CONTENT_CLASSES,
     USER_MESSAGE_CLASSES,
 )
-from utils import Failure, format_for_sse, split_string_into_words
+from utils import format_for_sse, split_string_into_words
 
 CHAT_URL = "/chat"
 CHAT_PROMPT_URL = "/chat/prompt"
@@ -34,9 +35,6 @@ CHAT_RESPONSE_CONTENT_ID = "response-content"
 MOCK_RESPONSE_TIME = 0.5
 
 GEMINI_MODEL = "gemini-2.0-flash"
-
-
-
 
 
 async def parrot_chat(prompt: str, conversation: str = "") -> AsyncIterable[Failure | str | None]:
@@ -95,9 +93,7 @@ def setup_chat_routes(app: FastHTML, process_chat: Callable[[str, str], AsyncIte
         else:
             conversation_elements = []
         return Main(cls=PAGE_CONTAINER_CLASSES)(
-            Div(cls=CONTENT_WRAPPER_CLASSES)(
-                Article(id=CONVERSATION_CONTAINER_ID, cls=CONVERSATION_CONTAINER_CLASSES)(*conversation_elements, get_message_form(conversation=conversation))
-            )
+            Div(cls=CONTENT_WRAPPER_CLASSES)(Article(id=CONVERSATION_CONTAINER_ID, cls=CONVERSATION_CONTAINER_CLASSES)(*conversation_elements, get_message_form(conversation=conversation)))
         )
 
     @app.post(CHAT_PROMPT_URL)
@@ -145,7 +141,7 @@ async def get_sse_chat_generator(
         if isinstance(msg, str):
             aggregated_response += msg
         elif isinstance(msg, Failure):
-            logging.error(f"get_chat_response_stream: Error: {msg.message}")
+            logging.warning(f"get_chat_response_stream: Error: {msg.message}")
             break
         # Yield each chunk of the response so the browser can render it incrementally
         yield format_for_sse(Span(msg))

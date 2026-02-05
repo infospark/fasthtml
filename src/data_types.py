@@ -52,5 +52,8 @@ class GraphManager:
         self._graphs[graph.graph_id] = graph
         return graph
 
-    def get_graph(self, graph_id: GraphID) -> Graph:
-        return self._graphs[graph_id]
+    def get_graph(self, graph_id: GraphID) -> Failure | Graph:
+        graph = self._graphs.get(graph_id)
+        if graph is not None:
+            return graph
+        return Failure(f"Graph with id {graph_id} not found")

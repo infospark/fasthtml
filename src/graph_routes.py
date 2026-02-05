@@ -1,4 +1,6 @@
-from fasthtml.common import FT, H1, Div, FastHTML, Script, Title
+import logging
+
+from fasthtml.common import FT, H1, Div, FastHTML, RedirectResponse, Script, Title
 
 from data_types import GraphManager
 from styles import CONTAINER_CLASSES, GRAPH_CONTAINER_STYLE
@@ -8,11 +10,17 @@ GRAPH_URL = "/graph"
 
 def setup_graph_routes(app: FastHTML, graph_manager: GraphManager) -> None:
     @app.get(GRAPH_URL)
-    def get_graph_page() -> FT:
-        return Div(
-            Title("Sigma Demo"),
+    def get_graph_page(graph_id: str | None = None) -> FT:
+        if not graph_id:
+            graph = graph_manager.create_graph()
+            graph_id = graph.graph_id
+            logging.info(f"Creating new graph with id: {graph_id}")
+            return RedirectResponse(f"{GRAPH_URL}?graph_id={graph.graph_id}")
+
+        content = Div(
+            Title("Graph Demo"),
             Div(id="onboarding-container", cls=CONTAINER_CLASSES)(
-                H1("Sigma Demo"),
+                H1("Graph Demo"),
                 Script(src="https://unpkg.com/graphology@0.25.4/dist/graphology.umd.min.js"),
                 Script(src="https://unpkg.com/sigma@3.0.0-beta.29/dist/sigma.min.js"),
                 Div(id="graph-container", style=GRAPH_CONTAINER_STYLE),
@@ -40,3 +48,4 @@ def setup_graph_routes(app: FastHTML, graph_manager: GraphManager) -> None:
                 """),
             ),
         )
+        return content
