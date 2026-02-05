@@ -65,16 +65,9 @@ def test_sigma_demo_inject_node_using_js(page: Page, server: None) -> None:
     assert page_has_node(page, "node4")
 
 
-@pytest.mark.skip("Not implemented")
-def test_sigma_demo_node_passed_via_data_model(page: Page, server: None) -> None:
-    # Navigate to the sigma demo page
-    page.goto(f"http://localhost:5001{GRAPH_URL}")
+# TODO - work out how to grab the graph_manager from the app, use it to create a new graph and then pass the graph_id to the page
 
-    # new_node = "node5"
-    # Pass the new node to the data model
-
-
-# TODO - work out how to pass nodes and edges into the page - have it display them - be able to test them
+# TODO - live streaming of changes to the graph:
 # So SSE would be sitting waiting for events to be given to it
 # SO do that first - set up SSE on the server side and just start streaming messages from server to browser
 # On the server side I need some kind of generator that will emit new Node/Edges - for now it can just iterate over a list that I pass to it from the test
