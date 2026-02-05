@@ -1,18 +1,16 @@
-from dataclasses import dataclass
-
 from fasthtml.common import FT, H1, Div, FastHTML, Script, Title
 
+from data_types import GraphManager
 from styles import CONTAINER_CLASSES, GRAPH_CONTAINER_STYLE
 
-SIGMA_DEMO_URL = "/sigma-demo"
+GRAPH_URL = "/graph"
 
-def setup_sigma_demo_routes(app: FastHTML) -> None:
 
-    @app.get(SIGMA_DEMO_URL)
-    def get_sigma_page() -> FT:
+def setup_graph_routes(app: FastHTML, graph_manager: GraphManager) -> None:
+    @app.get(GRAPH_URL)
+    def get_graph_page() -> FT:
         return Div(
             Title("Sigma Demo"),
-
             Div(id="onboarding-container", cls=CONTAINER_CLASSES)(
                 H1("Sigma Demo"),
                 Script(src="https://unpkg.com/graphology@0.25.4/dist/graphology.umd.min.js"),
@@ -39,11 +37,6 @@ def setup_sigma_demo_routes(app: FastHTML) -> None:
                     // EXPOSE FOR TESTING
                     window.graph = graph;
                     window.renderer = renderer;
-                """)
-        ))
-
-
-@dataclass
-class Edge:
-    source: str
-    target: str
+                """),
+            ),
+        )

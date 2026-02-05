@@ -7,9 +7,10 @@ from fasthtml.common import (
 )
 
 from chat import setup_chat_routes
+from data_types import GraphManager
 from dropadoc import setup_dropadoc_routes
+from graph import setup_graph_routes
 from onboarding import setup_onboarding_routes
-from sigma_demo import setup_sigma_demo_routes
 from styles import BODY_CLASSES, HTML_CLASSES
 from utils import Failure
 
@@ -20,6 +21,7 @@ OK = 200
 sse_hdr = Script(src="https://unpkg.com/htmx-ext-sse@2.2.1/sse.js")
 tailwind_hdr = Script(src="https://cdn.tailwindcss.com")
 
+
 def start_app(process_chat: Callable[[str, str], AsyncIterable[Failure | str | None]]) -> FastHTML:
     app, rt = fast_app(
         hdrs=(sse_hdr, tailwind_hdr),
@@ -27,9 +29,9 @@ def start_app(process_chat: Callable[[str, str], AsyncIterable[Failure | str | N
         htmlkw={"cls": HTML_CLASSES},
         bodykw={"cls": BODY_CLASSES},
     )
-
+    graph_manager = GraphManager()
     setup_onboarding_routes(app)
     setup_chat_routes(app, process_chat)
     setup_dropadoc_routes(app)
-    setup_sigma_demo_routes(app)
+    setup_graph_routes(app, graph_manager)
     return app
