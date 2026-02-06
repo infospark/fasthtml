@@ -40,6 +40,14 @@ class Graph:
     nodes: list[Node]
     edges: list[Edge]
 
+    def add_node(self, node: Node) -> Success | Failure:
+        self.nodes.append(node)
+        return Success()
+
+    def add_edge(self, edge: Edge) -> Success | Failure:
+        self.edges.append(edge)
+        return Success()
+
 
 @dataclass
 class GraphManager:

@@ -23,7 +23,7 @@ tailwind_hdr = Script(src="https://cdn.tailwindcss.com")
 
 
 def start_app(
-    process_chat: Callable[[str, str], AsyncIterable[Failure | str | None]] = parrot_chat, 
+    process_chat: Callable[[str, str], AsyncIterable[Failure | str | None]] = parrot_chat,
     graph_manager: None | GraphManager = None,) -> FastHTML:
     app, rt = fast_app(
         hdrs=(sse_hdr, tailwind_hdr),

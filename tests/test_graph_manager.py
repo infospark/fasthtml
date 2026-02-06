@@ -44,3 +44,13 @@ def test_graph_manager_get_graph_not_found() -> None:
     graph_manager = GraphManager()
     retrieved_graph = graph_manager.get_graph(GraphID("graph1"))
     assert isinstance(retrieved_graph, Failure)
+
+
+def test_graph_add_nodes_and_edges() -> None:
+    graph_manager = GraphManager()
+    graph = graph_manager.create_graph()
+    assert graph.add_node(Node(node_id=NodeId("node1")))
+    assert graph.add_node(Node(node_id=NodeId("node2")))
+    assert graph.add_edge(Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")))
+    assert graph.nodes == [Node(node_id=NodeId("node1")), Node(node_id=NodeId("node2"))]
+    assert graph.edges == [Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2"))]

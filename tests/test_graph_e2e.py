@@ -1,10 +1,12 @@
 import random
+import re
 import time
+
 import pytest
 from playwright.sync_api import Page, expect
 
 from app import start_app
-from data_types import Failure, GraphManager, Success
+from data_types import Edge, Failure, Graph, GraphID, GraphManager, Node, NodeId, Success
 from graph_routes import GRAPH_URL
 from tests.conftest import ThreadedUvicorn
 
@@ -69,37 +71,99 @@ def test_graph_inject_node_using_js(page: Page, server: None) -> None:
     assert page_has_node(page, "node4")
 
 
-def test_start_server(page: Page) -> None:
+def start_server_with_graph_manager(graph_manager: GraphManager, port: int) -> Failure | Success:
+    try:
+        # create a graph manager
+        app = start_app(graph_manager=graph_manager)
+
+        # 2. Start Uvicorn in a background thread
+        server_thread = ThreadedUvicorn(app, port=port)
+        server_thread.start()
+
+        # 3. Wait for the server to be ready
+        timeout = 5
+        start_time = time.time()
+        while not server_thread.server.started:
+            if time.time() - start_time > timeout:
+                server_thread.stop()
+                raise RuntimeError(f"Server failed to start on port {port}")
+            time.sleep(0.1)
+
+        return Success()
+    except Exception as e:
+        return Failure(f"Got error starting server: {e}")
+
+
+def test_graph_route_creates_new_graph(page: Page) -> None:
     # use a unique port for the server
     port = 5005 + random.randint(0, 10)
     # create a graph manager
     graph_manager = GraphManager()
-    graph = graph_manager.create_graph()
-    graph_id = graph.graph_id
-    # get the app
-    app = start_app(graph_manager=graph_manager)
-
-    # 2. Start Uvicorn in a background thread
-    server_thread = ThreadedUvicorn(app, port=port)
-    server_thread.start()
-
-    # 3. Wait for the server to be ready
-    timeout = 5
-    start_time = time.time()
-    while not server_thread.server.started:
-        if time.time() - start_time > timeout:
-            server_thread.stop()
-            raise RuntimeError(f"Server failed to start on port {port}")
-        time.sleep(0.1)
+    assert start_server_with_graph_manager(graph_manager, port)
 
     # Navigate to the graph page
-    page.goto(f"http://localhost:{port}{GRAPH_URL}?graph_id={graph_id}")
+    page.goto(f"http://localhost:{port}{GRAPH_URL}")
 
-    # Ensure there is an h1 element with the text Sigma Demo
+    # The page should redirect to a page with a graph_id in the query params
+    expect(page).to_have_url(re.compile(f"http://localhost:{port}{GRAPH_URL}\\?graph_id=.*"))
+
+    # Get the graph_id from the query params
+    graph_id = page.url.split("graph_id=")[1]
+
+    # Ensure that the graph_manager has the corresponding graph
+    graph = graph_manager.get_graph(GraphID(graph_id))
+    assert isinstance(graph, Graph)
+
+
+def test_graph_route_uses_existing_graph(page: Page) -> None:
+    # use a unique port for the server
+    port = 5005 + random.randint(0, 10)
+    # create a graph manager
+    graph_manager = GraphManager()
+    assert start_server_with_graph_manager(graph_manager, port)
+
+    # create a graph
+    graph = graph_manager.create_graph()
+    graph_id = graph.graph_id
+
+    # Navigate to the graph page
+    url = f"http://localhost:{port}{GRAPH_URL}?graph_id={graph_id}"
+    page.goto(url)
+
+    # The page should be at the correct URL - i.e. we do not redirect to a page with a new graph_id
+    expect(page).to_have_url(url)
+
+
+@pytest.mark.skip("Not implemented yet - specifically the page does not render the graph that was requested")
+def test_graph_page_shows_graph(page: Page) -> None:
+    # use a unique port for the server
+    port = 5005 + random.randint(0, 10)
+    # create a graph manager
+    graph_manager = GraphManager()
+    assert start_server_with_graph_manager(graph_manager, port)
+
+    # create a graph
+    graph = graph_manager.create_graph()
+    assert isinstance(graph, Graph)
+    assert graph.add_node(Node(node_id=NodeId("node X")))
+    assert graph.add_node(Node(node_id=NodeId("node Y")))
+    assert graph.add_edge(Edge(source_node_id=NodeId("node X"), target_node_id=NodeId("node Y")))
+
+    # Navigate to the graph page
+    url = f"http://localhost:{port}{GRAPH_URL}?graph_id={graph.graph_id}"
+    page.goto(url)
+
+    # The page should be at the correct URL - i.e. we do not redirect to a page with a new graph_id
+    expect(page).to_have_url(url)
+
+    # Check that the expected nodes exist
     expect(page.locator("h1")).to_have_text("Graph Demo")
 
+    # Now check the graph is rendered correctly
+    assert page_has_node(page, "node1")
+    assert page_has_node(page, "node Y")
+    assert page_has_edge(page, "node X", "node Y")
 
-# TODO - work out how to grab the graph_manager from the app, use it to create a new graph and then pass the graph_id to the page
 
 # TODO - live streaming of changes to the graph:
 # So SSE would be sitting waiting for events to be given to it
@@ -107,5 +171,5 @@ def test_start_server(page: Page) -> None:
 # On the server side I need some kind of generator that will emit new Node/Edges - for now it can just iterate over a list that I pass to it from the test
 # Later something else will generate those events
 # Remember - I can run page.evaluate on the server side when testing - i cannot run page.evaluate on some users' browser!
-# TODO - start looking at layouts - how do I build that TDD??
+
 # TODO - mimic a user interacting with the graph - say moving node? ensure we pick that up too
