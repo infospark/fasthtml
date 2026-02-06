@@ -6,7 +6,7 @@ from fasthtml.common import (
     fast_app,
 )
 
-from chat_routes import setup_chat_routes
+from chat_routes import parrot_chat, setup_chat_routes
 from data_types import Failure, GraphManager
 from dropadoc import setup_dropadoc_routes
 from graph_routes import setup_graph_routes
@@ -22,7 +22,9 @@ sse_hdr = Script(src="https://unpkg.com/htmx-ext-sse@2.2.1/sse.js")
 tailwind_hdr = Script(src="https://cdn.tailwindcss.com")
 
 
-def start_app(process_chat: Callable[[str, str], AsyncIterable[Failure | str | None]], graph_manager: None | GraphManager = None) -> FastHTML:
+def start_app(
+    process_chat: Callable[[str, str], AsyncIterable[Failure | str | None]] = parrot_chat, 
+    graph_manager: None | GraphManager = None,) -> FastHTML:
     app, rt = fast_app(
         hdrs=(sse_hdr, tailwind_hdr),
         pico=False,

@@ -1,8 +1,12 @@
+import random
+import time
 import pytest
 from playwright.sync_api import Page, expect
 
-from data_types import Failure, Success
+from app import start_app
+from data_types import Failure, GraphManager, Success
 from graph_routes import GRAPH_URL
+from tests.conftest import ThreadedUvicorn
 
 
 def page_has_node(page: Page, node_id: str) -> bool:
@@ -30,8 +34,8 @@ def add_node(page: Page, node_id: str) -> Failure | Success:
         return Failure(f"Got error adding node: {e}")
 
 
-def test_sigma_demo(page: Page, server: None) -> None:
-    # Navigate to the sigma demo page
+def test_graph_e2e(page: Page, server: None) -> None:
+    # Navigate to the graph page
     page.goto(f"http://localhost:5001{GRAPH_URL}?session_id=test_graph")
 
     # Ensure there is an h1 element with the text Sigma Demo
@@ -55,14 +59,44 @@ def test_sigma_demo(page: Page, server: None) -> None:
         assert page_has_edge(page, source_node_id, target_node_id), f"Edge {source_node_id} -> {target_node_id} should exist"
 
 
-def test_sigma_demo_inject_node_using_js(page: Page, server: None) -> None:
-    # Navigate to the sigma demo page
+def test_graph_inject_node_using_js(page: Page, server: None) -> None:
+    # Navigate to the graph page
     page.goto(f"http://localhost:5001{GRAPH_URL}")
 
     # dynamically add node 4 to the graph
     assert add_node(page, "node4")
     # check that the node exists
     assert page_has_node(page, "node4")
+
+
+def test_start_server(page: Page) -> None:
+    # use a unique port for the server
+    port = 5005 + random.randint(0, 10)
+    # create a graph manager
+    graph_manager = GraphManager()
+    graph = graph_manager.create_graph()
+    graph_id = graph.graph_id
+    # get the app
+    app = start_app(graph_manager=graph_manager)
+
+    # 2. Start Uvicorn in a background thread
+    server_thread = ThreadedUvicorn(app, port=port)
+    server_thread.start()
+
+    # 3. Wait for the server to be ready
+    timeout = 5
+    start_time = time.time()
+    while not server_thread.server.started:
+        if time.time() - start_time > timeout:
+            server_thread.stop()
+            raise RuntimeError(f"Server failed to start on port {port}")
+        time.sleep(0.1)
+
+    # Navigate to the graph page
+    page.goto(f"http://localhost:{port}{GRAPH_URL}?graph_id={graph_id}")
+
+    # Ensure there is an h1 element with the text Sigma Demo
+    expect(page.locator("h1")).to_have_text("Graph Demo")
 
 
 # TODO - work out how to grab the graph_manager from the app, use it to create a new graph and then pass the graph_id to the page

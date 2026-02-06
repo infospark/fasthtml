@@ -34,7 +34,7 @@ class ThreadedUvicorn(threading.Thread):
 def server() -> Generator[None, None, None]:
     # 1. Initialize the app instance using your factory
     # This is where dependency injection happens for your tests!
-    app = start_app(parrot_chat)
+    app = start_app()
 
     # 2. Start Uvicorn in a background thread
     server_thread = ThreadedUvicorn(app, port=5001)
