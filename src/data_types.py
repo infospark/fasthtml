@@ -1,6 +1,7 @@
+import random
 import uuid
 from dataclasses import dataclass, field
-from typing import NewType
+from typing import Any, NewType
 
 
 @dataclass
@@ -41,12 +42,34 @@ class Graph:
     edges: list[Edge]
 
     def add_node(self, node: Node) -> Success | Failure:
+        if any(n.node_id == node.node_id for n in self.nodes):
+            return Success()
         self.nodes.append(node)
         return Success()
 
     def add_edge(self, edge: Edge) -> Success | Failure:
+        if any(e.source_node_id == edge.source_node_id and e.target_node_id == edge.target_node_id for e in self.edges):
+            return Success()
         self.edges.append(edge)
         return Success()
+
+    def get_graphology_data(self) -> dict[str, Any]:
+        nodes_data: list[dict[str, Any]] = []
+        for node in self.nodes:
+            nodes_data.append({
+                "key": node.node_id,
+                "attributes": {
+                    "x": random.random() * 100,
+                    "y": random.random() * 100,
+                    "size": 10,
+                    "label": node.node_id,
+                },
+            })
+        return {
+            "attributes": {"name": self.graph_id},
+            "nodes": nodes_data,
+            "edges": [{"source": edge.source_node_id, "target": edge.target_node_id} for edge in self.edges],
+        }
 
 
 @dataclass

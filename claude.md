@@ -2,23 +2,27 @@
 
 ## Core Principles
 
+### Functional TDD (Test-Driven Development)
+- **All code must be written to pass a test first**
+- No code should be added without a corresponding test
+- Tests drive the design of functions
+- Tests should be clear, readable, and serve as documentation
+- Write the test, watch it fail, write the minimal code to pass, refactor
+
+### No Exceptions - Railway-Oriented Programming
+- **Functions must never throw exceptions**
+- Functions should only return their declared type
+- Pure functions: use `Failure | T` return types
+- Side-effect functions: use `Failure | Success` return types
+- Example: `def fetch_from_api(url: str) -> Failure | str`
+- Example: `def save_to_db(data: Data) -> Failure | Success`
+- Support "Railway style" with multiple return statements (PLR0911 ignored in ruff)
+
 ### Functional Programming & Pure Functions
 - Prefer pure functions: same input always produces same output, no side effects
 - Separate pure logic from side effects (I/O, state mutations, etc.)
 - Make dependencies explicit through function parameters
 - Keep functions small and focused on a single responsibility
-
-### Railway-Oriented Programming
-- Functions should only return their declared type - **do not throw exceptions**
-- Use `Failure | T` return types instead of raising exceptions
-- Example: a function that gets something from Gemini should return `Failure | str`
-- Support "Railway style" with multiple return statements (PLR0911 ignored in ruff)
-
-### Test-Driven Development (TDD)
-- Write tests first (Functional TDD approach)
-- Tests should drive the design of pure functions
-- Aim for high test coverage, especially for business logic
-- Tests should be clear, readable, and serve as documentation
 
 ## Project Structure
 - `/tests` contains pytest files
@@ -29,6 +33,8 @@
 
 ### Type Hints
 - **MyPy strict mode enabled** - all functions must have type hints
+- Every function must respect its declared signature
+- Return types must be honored (no exceptions bypassing the type system)
 - `disallow_untyped_decorators = false` (for FastHTML routes)
 - `implicit_reexport = true`
 - `warn_unused_ignores = true`
@@ -61,11 +67,13 @@
 ## Testing
 
 ### Framework: pytest
+- **Tests come first** - write the test before the implementation
 - Test files in `tests/` directory
 - Test path: `tests/`
 - Source path: `src/`
 - Run with: `PYTHONPATH=$PYTHONPATH:$(pwd)/src pytest --cov=src`
 - Coverage excludes: `src/main.py`
+- No code without a test
 
 ### End-to-end Testing
 - Uses Playwright with Chromium
@@ -76,12 +84,22 @@
 - **MyPy**: Run with `mypy .`
 - **Ruff**: Run with `ruff check .`
 
+### Development Workflow
+After making changes, run checks efficiently:
+1. `mypy .` - type checking
+2. `ruff check .` - linting
+3. `PYTHONPATH=$PYTHONPATH:$(pwd)/src pytest tests/test_<impacted>.py` - run only impacted test file(s)
+
+Only run `./build.sh` (full test suite) before committing.
+
 ## Architecture & Patterns
 
 ### Error Handling
-- **No exceptions** in pure functions
-- Use union types: `Failure | SuccessType`
-- Railway-oriented programming pattern
+- **No exceptions anywhere** - never use `raise`
+- Pure functions return: `Failure | T` where T is the success type
+- Side-effect functions return: `Failure | Success`
+- Railway-oriented programming: chain operations, short-circuit on Failure
+- Use pattern matching or isinstance checks to handle results
 
 ### FastHTML Specific
 - Allow uppercase function names for component-style functions (N802 ignored)
