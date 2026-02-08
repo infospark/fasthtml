@@ -50,9 +50,8 @@ def test_graph_manager_get_graph_not_found() -> None:
 def test_graph_add_nodes_and_edges() -> None:
     graph_manager = GraphManager()
     graph = graph_manager.create_graph()
-    assert graph.add_node(Node(node_id=NodeId("node1")))
-    assert graph.add_node(Node(node_id=NodeId("node2")))
-    assert graph.add_edge(Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")))
+    assert graph.add_nodes([Node(node_id=NodeId("node1")), Node(node_id=NodeId("node2"))])
+    assert graph.add_edges([Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2"))])
     assert graph.nodes == [Node(node_id=NodeId("node1")), Node(node_id=NodeId("node2"))]
     assert graph.edges == [Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2"))]
 
@@ -73,12 +72,19 @@ def test_graph_is_empty() -> None:
 
 
 def test_graph_add_edge_is_idempotent() -> None:
-    graph = Graph(graph_id=GraphID("test"), nodes=[], edges=[])
-    graph.add_node(Node(node_id=NodeId("node1")))
-    graph.add_node(Node(node_id=NodeId("node2")))
+    graph = Graph(graph_id=GraphID("test"))
+    graph.add_nodes([Node(node_id=NodeId("node1")), Node(node_id=NodeId("node2"))])
     graph.add_edge(Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")))
     graph.add_edge(Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")))
     assert len(graph.edges) == 1
+    assert graph.edges == [Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2"))]
+
+
+def test_graph_add_elements() -> None:
+    graph = Graph(graph_id=GraphID("test"))
+    result = graph.add_elements([Node(node_id=NodeId("node1")), Node(node_id=NodeId("node2")), Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2"))])
+    assert isinstance(result, Graph)
+    assert graph.nodes == [Node(node_id=NodeId("node1")), Node(node_id=NodeId("node2"))]
     assert graph.edges == [Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2"))]
 
 

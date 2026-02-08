@@ -18,12 +18,18 @@ def create_new_graph_and_redirect(graph_manager: GraphManager) -> RedirectRespon
 
 def add_example_nodes_and_edges(graph: Graph) -> Success | Failure:
     try:
-        graph.add_node(Node(node_id=NodeId("node1")))
-        graph.add_node(Node(node_id=NodeId("node2")))
-        graph.add_node(Node(node_id=NodeId("node3")))
-        graph.add_edge(Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")))
-        graph.add_edge(Edge(source_node_id=NodeId("node2"), target_node_id=NodeId("node3")))
-        graph.add_edge(Edge(source_node_id=NodeId("node3"), target_node_id=NodeId("node1")))
+        result = graph.add_elements(
+            [
+                Node(node_id=NodeId("node1")),
+                Node(node_id=NodeId("node2")),
+                Node(node_id=NodeId("node3")),
+                Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")),
+                Edge(source_node_id=NodeId("node2"), target_node_id=NodeId("node3")),
+                Edge(source_node_id=NodeId("node3"), target_node_id=NodeId("node1")),
+            ]
+        )
+        if isinstance(result, Failure):
+            return result
         return Success()
     except Exception as e:
         return Failure(f"Error adding example nodes and edges: {e}")

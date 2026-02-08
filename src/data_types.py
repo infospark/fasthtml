@@ -37,20 +37,45 @@ class Edge:
 @dataclass
 class Graph:
     graph_id: GraphID
-    nodes: list[Node]
-    edges: list[Edge]
+    nodes: list[Node] = field(default_factory=list)
+    edges: list[Edge] = field(default_factory=list)
 
-    def add_node(self, node: Node) -> Success | Failure:
+    def add_node(self, node: Node) -> "Graph | Failure":
         if any(n.node_id == node.node_id for n in self.nodes):
-            return Success()
+            return self
         self.nodes.append(node)
-        return Success()
+        return self
+
+    def add_nodes(self, nodes: list[Node]) -> "Graph | Failure":
+        for node in nodes:
+            result = self.add_node(node)
+            if isinstance(result, Failure):
+                return result
+        return self
 
     def add_edge(self, edge: Edge) -> Success | Failure:
         if any(e.source_node_id == edge.source_node_id and e.target_node_id == edge.target_node_id for e in self.edges):
             return Success()
         self.edges.append(edge)
         return Success()
+
+    def add_edges(self, edges: list[Edge]) -> "Graph | Failure":
+        for edge in edges:
+            result = self.add_edge(edge)
+            if isinstance(result, Failure):
+                return result
+        return self
+
+    def add_elements(self, elements: list[Node | Edge]) -> "Graph | Failure":
+        nodes = [element for element in elements if isinstance(element, Node)]
+        edges = [element for element in elements if isinstance(element, Edge)]
+        result = self.add_nodes(nodes)
+        if isinstance(result, Failure):
+            return result
+        result = self.add_edges(edges)
+        if isinstance(result, Failure):
+            return result
+        return self
 
     def is_empty(self) -> bool:
         return len(self.nodes) == 0 and len(self.edges) == 0
