@@ -52,6 +52,9 @@ class Graph:
         self.edges.append(edge)
         return Success()
 
+    def is_empty(self) -> bool:
+        return len(self.nodes) == 0 and len(self.edges) == 0
+
 
 @dataclass
 class GraphManager:

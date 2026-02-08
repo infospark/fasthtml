@@ -65,6 +65,13 @@ def test_graph_add_node_is_idempotent() -> None:
     assert graph.nodes == [Node(node_id=NodeId("node1"))]
 
 
+def test_graph_is_empty() -> None:
+    graph = Graph(graph_id=GraphID("test"), nodes=[], edges=[])
+    assert graph.is_empty()
+    graph.add_node(Node(node_id=NodeId("node1")))
+    assert not graph.is_empty()
+
+
 def test_graph_add_edge_is_idempotent() -> None:
     graph = Graph(graph_id=GraphID("test"), nodes=[], edges=[])
     graph.add_node(Node(node_id=NodeId("node1")))
