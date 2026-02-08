@@ -36,6 +36,8 @@ from styles import (
 )
 from utils import format_for_sse
 
+STEP_DELAY_SECONDS = 0.2
+
 
 def CompanyInput() -> FT:
     # Using 'name="companies"' for all inputs creates a list in the backend
@@ -55,7 +57,7 @@ def get_onboarding_event_stream(names: str) -> EventStream:
             for i in range(1, 5):
                 logging.info(f"[{name}] Step {i} complete")
                 yield format_for_sse(StatusStep(f"[{name}] Step {i} complete"))
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(STEP_DELAY_SECONDS)
 
         # This tells the JS on the browser: "Stop listening and close the socket."
         logging.info(f"Finished {name}")
@@ -102,9 +104,7 @@ def setup_onboarding_routes(app: FastHTML) -> None:
 
     @app.get(ONBOARDING_URL)
     def get_onboarding_page() -> FT:
-        return Main(cls=PAGE_CONTAINER_CLASSES)(
-            Div(cls=CONTENT_WRAPPER_CLASSES)(get_onboarding_container())
-        )
+        return Main(cls=PAGE_CONTAINER_CLASSES)(Div(cls=CONTENT_WRAPPER_CLASSES)(get_onboarding_container()))
 
     @app.get(ONBOARDING_STREAM_TASKS_STATUS_URL)
     async def onboarding_stream_tasks_status(names: str) -> EventStream:
