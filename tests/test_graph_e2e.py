@@ -128,7 +128,7 @@ def test_graph_route_uses_existing_graph(page: Page) -> None:
     expect(page).to_have_url(url)
 
 
-def test_graph_page_shows_graph(page: Page) -> None:
+def test_graph_page_initialises_graph(page: Page) -> None:
     # use a unique port for the server
     port = 5005 + random.randint(0, 10)
     # create a graph manager
@@ -149,7 +149,7 @@ def test_graph_page_shows_graph(page: Page) -> None:
     # The page should be at the correct URL - i.e. we do not redirect to a page with a new graph_id
     expect(page).to_have_url(url)
 
-    # Check that the expected nodes exist
+    # Check that the page is at the correct URL
     expect(page.locator("h1")).to_have_text("Graph Demo")
 
     # Now check the graph is rendered correctly
@@ -158,9 +158,38 @@ def test_graph_page_shows_graph(page: Page) -> None:
     assert page_has_edge(page, "node X", "node Y")
 
 
+@pytest.mark.skip("Not implemented yet - specifically the page does not render additional nodes added to the server-side graph")
+def test_graph_page_adds_node(page: Page) -> None:
+    # use a unique port for the server
+    port = 5005 + random.randint(0, 10)
+    # create a graph manager
+    graph_manager = GraphManager()
+    assert start_server_with_graph_manager(graph_manager, port)
+
+    # create a graph
+    graph = graph_manager.create_graph()
+    assert isinstance(graph, Graph)
+    assert graph.add_node(Node(node_id=NodeId("node X")))
+    assert graph.add_node(Node(node_id=NodeId("node Y")))
+    assert graph.add_edge(Edge(source_node_id=NodeId("node X"), target_node_id=NodeId("node Y")))
+
+    # Navigate to the graph page
+    page.goto(f"http://localhost:{port}{GRAPH_URL}")
+
+    # Check that the page is at the correct URL
+    expect(page.locator("h1")).to_have_text("Graph Demo")
+
+    # Add a new node to the server-side graph
+    graph.add_node(Node(node_id=NodeId("node Z")))
+
+    # Check that the node exists
+    assert page_has_node(page, "node Z")
+
+
 # TODO - live streaming of changes to the graph:
 # So SSE would be sitting waiting for events to be given to it
 # SO do that first - set up SSE on the server side and just start streaming messages from server to browser
+# For now just inject new nodes directly (i.e. do not change the graph instance and track changes to it)
 # On the server side I need some kind of generator that will emit new Node/Edges - for now it can just iterate over a list that I pass to it from the test
 # Later something else will generate those events
 # Remember - I can run page.evaluate on the server side when testing - i cannot run page.evaluate on some users' browser!
