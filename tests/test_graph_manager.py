@@ -1,4 +1,4 @@
-from data_types import Edge, Failure, Graph, GraphID, GraphManager, Node, NodeId
+from data_types import Edge, Failure, Graph, GraphID, GraphManager, Node, NodeId, Success
 from graph_routes import graph_to_cytoscape_elements
 
 
@@ -83,7 +83,7 @@ def test_graph_add_edge_is_idempotent() -> None:
 def test_graph_add_elements() -> None:
     graph = Graph(graph_id=GraphID("test"))
     result = graph.add_elements([Node(node_id=NodeId("node1")), Node(node_id=NodeId("node2")), Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2"))])
-    assert isinstance(result, Graph)
+    assert isinstance(result, Success)
     assert graph.nodes == [Node(node_id=NodeId("node1")), Node(node_id=NodeId("node2"))]
     assert graph.edges == [Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2"))]
 

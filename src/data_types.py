@@ -40,18 +40,18 @@ class Graph:
     nodes: list[Node] = field(default_factory=list)
     edges: list[Edge] = field(default_factory=list)
 
-    def add_node(self, node: Node) -> "Graph | Failure":
+    def add_node(self, node: Node) -> Success | Failure:
         if any(n.node_id == node.node_id for n in self.nodes):
-            return self
+            return Failure(f"Node {node.node_id} already exists")
         self.nodes.append(node)
-        return self
+        return Success()
 
-    def add_nodes(self, nodes: list[Node]) -> "Graph | Failure":
+    def add_nodes(self, nodes: list[Node]) -> Success | Failure:
         for node in nodes:
             result = self.add_node(node)
             if isinstance(result, Failure):
                 return result
-        return self
+        return Success()
 
     def add_edge(self, edge: Edge) -> Success | Failure:
         if any(e.source_node_id == edge.source_node_id and e.target_node_id == edge.target_node_id for e in self.edges):
@@ -59,14 +59,14 @@ class Graph:
         self.edges.append(edge)
         return Success()
 
-    def add_edges(self, edges: list[Edge]) -> "Graph | Failure":
+    def add_edges(self, edges: list[Edge]) -> Success | Failure:
         for edge in edges:
             result = self.add_edge(edge)
             if isinstance(result, Failure):
                 return result
-        return self
+        return Success()
 
-    def add_elements(self, elements: list[Node | Edge]) -> "Graph | Failure":
+    def add_elements(self, elements: list[Node | Edge]) -> Success | Failure:
         nodes = [element for element in elements if isinstance(element, Node)]
         edges = [element for element in elements if isinstance(element, Edge)]
         result = self.add_nodes(nodes)
@@ -75,7 +75,7 @@ class Graph:
         result = self.add_edges(edges)
         if isinstance(result, Failure):
             return result
-        return self
+        return Success()
 
     def is_empty(self) -> bool:
         return len(self.nodes) == 0 and len(self.edges) == 0
