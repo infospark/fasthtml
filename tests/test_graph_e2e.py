@@ -17,7 +17,7 @@ def page_has_node(page: Page, node_id: str) -> bool:
 
 
 def page_has_edge(page: Page, source_node_id: str, target_node_id: str) -> bool:
-    eval_result = page.evaluate(f"() => window.cy.edges('[source=\"{source_node_id}\"][target=\"{target_node_id}\"]').length > 0")
+    eval_result = page.evaluate(f'() => window.cy.edges(\'[source="{source_node_id}"][target="{target_node_id}"]\').length > 0')
     return eval_result is True
 
 
@@ -128,7 +128,6 @@ def test_graph_route_uses_existing_graph(page: Page) -> None:
     expect(page).to_have_url(url)
 
 
-@pytest.mark.skip("Not implemented yet - specifically the page does not render the graph that was requested")
 def test_graph_page_shows_graph(page: Page) -> None:
     # use a unique port for the server
     port = 5005 + random.randint(0, 10)
@@ -154,7 +153,7 @@ def test_graph_page_shows_graph(page: Page) -> None:
     expect(page.locator("h1")).to_have_text("Graph Demo")
 
     # Now check the graph is rendered correctly
-    assert page_has_node(page, "node1")
+    assert page_has_node(page, "node X")
     assert page_has_node(page, "node Y")
     assert page_has_edge(page, "node X", "node Y")
 
