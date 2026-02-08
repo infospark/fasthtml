@@ -12,25 +12,22 @@ from tests.conftest import ThreadedUvicorn
 
 
 def page_has_node(page: Page, node_id: str) -> bool:
-    eval_result = page.evaluate(f"() => window.graph.hasNode('{node_id}')")
-    return eval_result is True  # the evaluate could return anything - just check for truthiness
+    eval_result = page.evaluate(f"() => window.cy.$id('{node_id}').length > 0")
+    return eval_result is True
 
 
 def page_has_edge(page: Page, source_node_id: str, target_node_id: str) -> bool:
-    eval_result = page.evaluate(f"() => window.graph.hasEdge('{source_node_id}', '{target_node_id}')")
-    return eval_result is True  # the evaluate could return anything - just check for truthiness
+    eval_result = page.evaluate(f"() => window.cy.edges('[source=\"{source_node_id}\"][target=\"{target_node_id}\"]').length > 0")
+    return eval_result is True
 
 
 def add_node(page: Page, node_id: str) -> Failure | Success:
     try:
-        page.evaluate("""() =>
-            window.graph.addNode('node4', {
-                label: 'Node 4',
-                x: 0,
-                y: 0,
-                size: 10,
-                color: 'blue'
-            })""")
+        page.evaluate(f"""() =>
+            window.cy.add({{
+                group: 'nodes',
+                data: {{ id: '{node_id}', label: '{node_id}' }}
+            }})""")
         return Success()
     except Exception as e:
         return Failure(f"Got error adding node: {e}")
@@ -43,12 +40,9 @@ def test_graph_e2e(page: Page, server: None) -> None:
     # Ensure there is an h1 element with the text Sigma Demo
     expect(page.locator("h1")).to_have_text("Graph Demo")
 
-    # Check that window.graph and window.renderer are exposed
-    graph_exists = page.evaluate("() => typeof window.graph !== 'undefined'")
-    renderer_exists = page.evaluate("() => typeof window.renderer !== 'undefined'")
-
-    assert graph_exists, "window.graph should be exposed"
-    assert renderer_exists, "window.renderer should be exposed"
+    # Check that window.cy is exposed
+    cy_exists = page.evaluate("() => typeof window.cy !== 'undefined'")
+    assert cy_exists, "window.cy should be exposed"
 
     # Check that the expected nodes exist
     expected_nodes = ["node1", "node2", "node3"]

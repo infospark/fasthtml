@@ -82,12 +82,12 @@
 
 ### Static Analysis
 - **MyPy**: Run with `mypy .`
-- **Ruff**: Run with `ruff check .`
+- **Ruff**: Run with `ruff check . --fix`
 
 ### Development Workflow
 After making changes, run checks efficiently:
 1. `mypy .` - type checking
-2. `ruff check .` - linting
+2. `ruff check . --fix` - linting with easy fixes
 3. `PYTHONPATH=$PYTHONPATH:$(pwd)/src pytest tests/test_<impacted>.py` - run only impacted test file(s)
 
 Only run `./build.sh` (full test suite) before committing.

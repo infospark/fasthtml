@@ -1,7 +1,6 @@
-import random
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, NewType
+from typing import NewType
 
 
 @dataclass
@@ -52,24 +51,6 @@ class Graph:
             return Success()
         self.edges.append(edge)
         return Success()
-
-    def get_graphology_data(self) -> dict[str, Any]:
-        nodes_data: list[dict[str, Any]] = []
-        for node in self.nodes:
-            nodes_data.append({
-                "key": node.node_id,
-                "attributes": {
-                    "x": random.random() * 100,
-                    "y": random.random() * 100,
-                    "size": 10,
-                    "label": node.node_id,
-                },
-            })
-        return {
-            "attributes": {"name": self.graph_id},
-            "nodes": nodes_data,
-            "edges": [{"source": edge.source_node_id, "target": edge.target_node_id} for edge in self.edges],
-        }
 
 
 @dataclass
