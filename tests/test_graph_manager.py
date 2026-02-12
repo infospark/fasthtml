@@ -7,7 +7,6 @@ from graph import Edge, Graph, GraphID, Node, NodeId
 from graph_manager import EdgeAdded, GraphManager, NodeAdded, graph_event_to_sse_data, graph_sse_stream
 
 
-
 def test_graph_manager_create_graph() -> None:
     graph_manager = GraphManager()
     graph = graph_manager.create_graph()
