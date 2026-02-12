@@ -25,8 +25,9 @@
 - Keep functions small and focused on a single responsibility
 
 ## Project Structure
-- `/tests` contains pytest files
 - `/src` contains source code
+- `/tests` contains unit and integration tests (pytest)
+- `/tests_e2e` contains end-to-end tests (Playwright) — isolated to avoid event loop conflicts
 - Modules are organized by feature
 
 ## Code Style
@@ -66,19 +67,20 @@
 
 ## Testing
 
-### Framework: pytest
+### Unit Tests (pytest)
 - **Tests come first** - write the test before the implementation
 - Test files in `tests/` directory
-- Test path: `tests/`
 - Source path: `src/`
-- Run with: `PYTHONPATH=$PYTHONPATH:$(pwd)/src pytest --cov=src`
+- Run with: `PYTHONPATH=$PYTHONPATH:$(pwd)/src pytest tests/ --cov=src`
 - Coverage excludes: `src/main.py`
 - No code without a test
 
-### End-to-end Testing
-- Uses Playwright with Chromium
-- Install: `playwright install --with-deps chromium`
-- Supports headless mode: `HEADLESS=True pytest`
+### End-to-end Tests (Playwright)
+- Test files in `tests_e2e/` directory (separate from unit tests)
+- Has its own `conftest.py` with server fixtures
+- Run with: `PYTHONPATH=$PYTHONPATH:$(pwd)/src pytest tests_e2e/`
+- Supports headless mode: `HEADLESS=True pytest tests_e2e/`
+- Install browsers: `playwright install --with-deps chromium`
 
 ### Static Analysis
 - **MyPy**: Run with `mypy .`
@@ -88,7 +90,7 @@
 After making changes, run checks efficiently:
 1. `mypy .` - type checking
 2. `ruff check . --fix` - linting with easy fixes
-3. `PYTHONPATH=$PYTHONPATH:$(pwd)/src pytest tests/test_<impacted>.py` - run only impacted test file(s)
+3. `PYTHONPATH=$PYTHONPATH:$(pwd)/src pytest tests/test_<impacted>.py` - run only impacted unit test file(s)
 
 Only run `./build.sh` (full test suite) before committing.
 
