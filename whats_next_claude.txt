@@ -1,0 +1,47 @@
+## Where We Are
+
+We've been refactoring GraphManager from publishing full graph snapshots to
+publishing typed events (NodeAdded/EdgeAdded) via a pub/sub mechanism.
+
+### What's been done:
+
+1. **Graph mutation methods are now private** (_add_node, _add_edge, etc.)
+   All mutations go through GraphManager.add_node() / add_edge() which
+   validate, mutate the graph, and publish events to subscribers.
+
+2. **Event dataclasses created**: NodeAdded(graph_id, node), EdgeAdded(graph_id, edge)
+   - GraphEvent = NodeAdded | EdgeAdded (type alias in data_types.py)
+
+3. **Old publish() removed** - replaced by internal _publish(event) that sends
+   individual events (no more deep copying entire graphs).
+
+4. **Three-layer SSE architecture** for getting events to the browser:
+   - Layer 1 DONE: graph_event_to_sse_data() in src/graph_events.py
+     Pure function: GraphEvent -> JSON string
+   - Layer 2 DONE: graph_sse_stream() in src/graph_events.py
+     Async generator: subscribes to GraphManager, yields SSE-formatted strings
+     Uses sync-then-async pattern (subscribe synchronously, yield asynchronously)
+   - Layer 3 TODO: SSE route handler in graph_routes.py
+     Thin glue: create the stream, return as SSE streaming response
+
+5. **E2E tests separated** into tests_e2e/ directory to isolate Playwright's
+   event loop from pytest-asyncio unit tests. build.sh and CI updated.
+
+### What's next:
+
+1. **Layer 3 - SSE route handler**: Add an SSE endpoint to graph_routes.py that
+   calls graph_sse_stream(graph_manager, graph_id) and returns it as a streaming
+   response. This should be very thin - just wiring. Look at how chat_routes.py
+   does SSE streaming for the pattern to follow.
+
+2. **Browser-side JS**: The graph page needs JavaScript that:
+   - Opens an EventSource connection to the SSE endpoint
+   - Parses incoming JSON events
+   - Calls Cytoscape's cy.add() for node_added/edge_added events
+   Look at the existing cytoscape script setup in graph_cytoscape_utils.py.
+
+3. **E2E test**: test_graph_page_adds_node_to_existing_graph in tests_e2e/ is
+   currently skipped (@pytest.mark.skip). Once the SSE wiring is complete, this
+   test should pass - it adds a node server-side and checks the browser sees it.
+
+4. **Commit**: The Layer 1 and Layer 2 work hasn't been committed yet.

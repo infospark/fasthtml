@@ -1,6 +1,9 @@
+import json
+
 import pytest
 
 from data_types import Edge, EdgeAdded, Failure, Graph, GraphID, GraphManager, Node, NodeAdded, NodeId, Success
+from graph_events import graph_event_to_sse_data, graph_sse_stream
 
 
 def test_create_graph() -> None:
@@ -105,6 +108,20 @@ def test_edge_added_event() -> None:
     assert event.edge == edge
 
 
+def test_graph_event_to_sse_data_node_added() -> None:
+    event = NodeAdded(graph_id=GraphID("graph1"), node=Node(node_id=NodeId("node1")))
+    result = graph_event_to_sse_data(event)
+    parsed = json.loads(result)
+    assert parsed == {"type": "node_added", "graph_id": "graph1", "node_id": "node1"}
+
+
+def test_graph_event_to_sse_data_edge_added() -> None:
+    event = EdgeAdded(graph_id=GraphID("graph1"), edge=Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")))
+    result = graph_event_to_sse_data(event)
+    parsed = json.loads(result)
+    assert parsed == {"type": "edge_added", "graph_id": "graph1", "source_node_id": "node1", "target_node_id": "node2"}
+
+
 def test_graph_manager_add_node() -> None:
     graph_manager = GraphManager()
     graph = graph_manager.create_graph()
@@ -141,6 +158,47 @@ def test_graph_manager_add_edge_to_unknown_graph() -> None:
     graph_manager = GraphManager()
     result = graph_manager.add_edge(GraphID("unknown"), Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")))
     assert isinstance(result, Failure)
+
+
+@pytest.mark.asyncio
+async def test_graph_sse_stream_yields_node_added() -> None:
+    graph_manager = GraphManager()
+    graph = graph_manager.create_graph()
+
+    stream = graph_sse_stream(graph_manager, graph.graph_id)
+
+    graph_manager.add_node(graph.graph_id, Node(node_id=NodeId("node1")))
+
+    message = await anext(stream)
+    assert "event: graph_update\n" in message
+    assert '"type": "node_added"' in message
+    assert '"node_id": "node1"' in message
+
+    await stream.aclose()
+
+
+@pytest.mark.asyncio
+async def test_graph_sse_stream_yields_edge_added() -> None:
+    graph_manager = GraphManager()
+    graph = graph_manager.create_graph()
+
+    stream = graph_sse_stream(graph_manager, graph.graph_id)
+
+    graph_manager.add_node(graph.graph_id, Node(node_id=NodeId("node1")))
+    graph_manager.add_node(graph.graph_id, Node(node_id=NodeId("node2")))
+    graph_manager.add_edge(graph.graph_id, Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")))
+
+    msg1 = await anext(stream)
+    msg2 = await anext(stream)
+    msg3 = await anext(stream)
+
+    assert '"type": "node_added"' in msg1
+    assert '"type": "node_added"' in msg2
+    assert '"type": "edge_added"' in msg3
+    assert '"source_node_id": "node1"' in msg3
+    assert '"target_node_id": "node2"' in msg3
+
+    await stream.aclose()
 
 
 @pytest.mark.asyncio
