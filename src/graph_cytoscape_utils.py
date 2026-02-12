@@ -2,7 +2,7 @@ from typing import Any
 
 from fasthtml.common import FT, Script
 
-from data_types import Graph
+from graph_manager import Graph
 
 # Node styling
 NODE_SIZE = 20

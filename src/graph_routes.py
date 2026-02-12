@@ -1,13 +1,16 @@
 import json
 import logging
 
-from fasthtml.common import FT, H1, Div, FastHTML, RedirectResponse, Script, Title
+from fasthtml.common import FT, H1, Div, FastHTML, RedirectResponse, Script, StreamingResponse, Title
 
-from data_types import Edge, Failure, GraphID, GraphManager, Node, NodeId, Success
+from data_types import Failure, Success
+from graph import Edge, GraphID, Node, NodeId
 from graph_cytoscape_utils import get_cytoscape_script, graph_to_cytoscape_elements
+from graph_manager import GraphManager, graph_sse_stream
 from styles import CONTAINER_CLASSES, GRAPH_CONTAINER_STYLE
 
 GRAPH_URL = "/graph"
+GRAPH_EVENTS_URL = "/graph/events"
 
 
 def create_new_graph_and_redirect(graph_manager: GraphManager) -> RedirectResponse:
@@ -53,3 +56,11 @@ def setup_graph_routes(app: FastHTML, graph_manager: GraphManager) -> None:
             ),
         )
         return content
+
+    @app.get(GRAPH_EVENTS_URL)
+    async def get_graph_events(graph_id: str, stop_after_n: int | None = None) -> StreamingResponse:
+        logging.info(f"get_graph_events: Getting graph events for graph {graph_id} with stop_after_n: {stop_after_n}")
+        return StreamingResponse(
+            graph_sse_stream(graph_manager, GraphID(graph_id), stop_after_n=stop_after_n),
+            media_type="text/event-stream",
+        )

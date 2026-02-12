@@ -1,14 +1,12 @@
-import random
 import re
-import time
 
 import pytest
 from playwright.sync_api import Page, expect
 
-from app import start_app
-from data_types import Edge, Failure, Graph, GraphID, GraphManager, Node, NodeId, Success
+from data_types import Failure, Success
+from graph import Edge, Graph, GraphID, Node, NodeId
+from graph_manager import GraphManager
 from graph_routes import GRAPH_URL
-from tests_e2e.conftest import ThreadedUvicorn
 
 
 def page_has_node(page: Page, node_id: str) -> bool:
@@ -65,35 +63,8 @@ def test_graph_inject_node_using_js(page: Page, server: None) -> None:
     assert page_has_node(page, "node4")
 
 
-def start_server_with_graph_manager(graph_manager: GraphManager, port: int) -> Failure | Success:
-    try:
-        # create a graph manager
-        app = start_app(graph_manager=graph_manager)
-
-        # 2. Start Uvicorn in a background thread
-        server_thread = ThreadedUvicorn(app, port=port)
-        server_thread.start()
-
-        # 3. Wait for the server to be ready
-        timeout = 5
-        start_time = time.time()
-        while not server_thread.server.started:
-            if time.time() - start_time > timeout:
-                server_thread.stop()
-                raise RuntimeError(f"Server failed to start on port {port}")
-            time.sleep(0.1)
-
-        return Success()
-    except Exception as e:
-        return Failure(f"Got error starting server: {e}")
-
-
-def test_graph_route_creates_new_graph(page: Page) -> None:
-    # use a unique port for the server
-    port = 5005 + random.randint(0, 10)
-    # create a graph manager
-    graph_manager = GraphManager()
-    assert start_server_with_graph_manager(graph_manager, port)
+def test_graph_route_creates_new_graph(page: Page, graph_server: tuple[GraphManager, int]) -> None:
+    graph_manager, port = graph_server
 
     # Navigate to the graph page
     page.goto(f"http://localhost:{port}{GRAPH_URL}")
@@ -109,12 +80,8 @@ def test_graph_route_creates_new_graph(page: Page) -> None:
     assert isinstance(graph, Graph)
 
 
-def test_graph_route_uses_existing_graph(page: Page) -> None:
-    # use a unique port for the server
-    port = 5005 + random.randint(0, 10)
-    # create a graph manager
-    graph_manager = GraphManager()
-    assert start_server_with_graph_manager(graph_manager, port)
+def test_graph_route_uses_existing_graph(page: Page, graph_server: tuple[GraphManager, int]) -> None:
+    graph_manager, port = graph_server
 
     # create a graph
     graph = graph_manager.create_graph()
@@ -128,12 +95,8 @@ def test_graph_route_uses_existing_graph(page: Page) -> None:
     expect(page).to_have_url(url)
 
 
-def test_graph_page_initial_graph_renders(page: Page) -> None:
-    # use a unique port for the server
-    port = 5005 + random.randint(0, 10)
-    # create a graph manager
-    graph_manager = GraphManager()
-    assert start_server_with_graph_manager(graph_manager, port)
+def test_graph_page_initial_graph_renders(page: Page, graph_server: tuple[GraphManager, int]) -> None:
+    graph_manager, port = graph_server
 
     # create a graph
     graph = graph_manager.create_graph()
@@ -159,12 +122,8 @@ def test_graph_page_initial_graph_renders(page: Page) -> None:
 
 
 @pytest.mark.skip("Not implemented yet - specifically the page does not render additional nodes added to the server-side graph")
-def test_graph_page_adds_node_to_existing_graph(page: Page) -> None:
-    # use a unique port for the server
-    port = 5005 + random.randint(0, 10)
-    # create a graph manager
-    graph_manager = GraphManager()
-    assert start_server_with_graph_manager(graph_manager, port)
+def test_graph_page_adds_node_to_existing_graph(page: Page, graph_server: tuple[GraphManager, int]) -> None:
+    graph_manager, port = graph_server
 
     # create a graph
     graph = graph_manager.create_graph()

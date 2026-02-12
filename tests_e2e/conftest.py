@@ -7,6 +7,7 @@ import uvicorn
 from fasthtml.common import FastHTML
 
 from app import start_app
+from graph_manager import GraphManager
 
 
 class ThreadedUvicorn(threading.Thread):
@@ -45,6 +46,29 @@ def server() -> Generator[None, None, None]:
         time.sleep(0.1)
 
     yield
+
+    server_thread.stop()
+    server_thread.join(timeout=2)
+
+
+@pytest.fixture()
+def graph_server() -> Generator[tuple[GraphManager, int], None, None]:
+    port = 5010
+    graph_manager = GraphManager()
+    app = start_app(graph_manager=graph_manager)
+
+    server_thread = ThreadedUvicorn(app, port=port)
+    server_thread.start()
+
+    timeout = 5
+    start_time = time.time()
+    while not server_thread.server.started:
+        if time.time() - start_time > timeout:
+            server_thread.stop()
+            raise RuntimeError(f"Server failed to start on port {port}")
+        time.sleep(0.1)
+
+    yield graph_manager, port
 
     server_thread.stop()
     server_thread.join(timeout=2)

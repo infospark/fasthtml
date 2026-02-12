@@ -1,3 +1,6 @@
+import logging
+import threading
+import time
 from collections.abc import Generator
 
 import pytest
@@ -5,9 +8,10 @@ from starlette.testclient import TestClient
 
 from app import OK_CODE, start_app
 from chat_routes import parrot_chat
-from data_types import Edge, Graph, GraphID, GraphManager, Node, NodeId
+from graph import Edge, Graph, GraphID, Node, NodeId
 from graph_cytoscape_utils import graph_to_cytoscape_elements
-from graph_routes import GRAPH_URL
+from graph_manager import GraphManager
+from graph_routes import GRAPH_EVENTS_URL, GRAPH_URL
 
 
 @pytest.fixture
@@ -68,3 +72,27 @@ def test_graph_get_cytoscape_elements() -> None:
     edges = [e for e in elements if "source" in e["data"]]
     assert nodes == expected_nodes
     assert edges == expected_edges
+
+
+def test_graph_events_sse_endpoint_returns_event_stream(graph_manager: GraphManager) -> None:
+    graph = graph_manager.create_graph()
+
+    def publish_after_delay() -> None:
+        time.sleep(0.5)
+        graph_manager.add_node(graph.graph_id, Node(node_id=NodeId("sse_node")))
+        logging.info("Published node")
+    logging.info("Starting thread to publish node after delay")
+    threading.Thread(target=publish_after_delay, daemon=True).start()
+
+    with TestClient(start_app(parrot_chat, graph_manager)) as client:
+        logging.info("Starting client stream")
+        with client.stream("GET", f"{GRAPH_EVENTS_URL}?graph_id={graph.graph_id}&stop_after_n=1") as response:
+            logging.info("Response stream started")
+            assert response.status_code == OK_CODE
+            assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
+            logging.info("Response stream headers received")
+            chunk = next(response.iter_text())
+            logging.info("Response stream chunk received")
+            assert "event: graph_update" in chunk
+            assert '"type": "node_added"' in chunk
+            assert '"sse_node"' in chunk
