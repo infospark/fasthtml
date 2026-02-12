@@ -33,13 +33,24 @@ Note: This project relies on Gemini via the genai package
 Please set up a .env file in the root of this project with an API Key:
 GEMINI_API_KEY = "<<YOUR_API_KEY>>"
 
-**Run all tests with coverage:**
+**Run unit tests with coverage:**
 ```bash
 export PYTHONPATH=$PYTHONPATH:$(pwd)/src
-pytest --cov=src --cov-report=term-missing
+pytest tests/ --cov=src --cov-report=term-missing
 ```
 
-**Run tests in headless mode (for CI):**
+**Run E2E tests:**
 ```bash
-HEADLESS=True pytest --cov=src
+export PYTHONPATH=$PYTHONPATH:$(pwd)/src
+pytest tests_e2e/
+```
+
+**Run E2E tests in headless mode (for CI):**
+```bash
+HEADLESS=True pytest tests_e2e/
+```
+
+**Run full build (static analysis + all tests):**
+```bash
+./build.sh
 ```

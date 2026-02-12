@@ -1,6 +1,6 @@
 [tool.mypy]
 ignore_missing_imports = true
-exclude = "tests/conftest\\.py"
+exclude = "tests_e2e/"
 strict = true
 disallow_untyped_decorators = false
 implicit_reexport = true
@@ -17,6 +17,7 @@ pythonpath = ["src"]
 testpaths = ["tests"]
 log_level = "INFO"
 log_cli = true
+asyncio_mode = "auto"
 
 [tool.coverage.run]
 source = ["src"]
