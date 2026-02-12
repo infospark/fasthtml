@@ -3,7 +3,7 @@ import logging
 
 from fasthtml.common import FT, H1, Div, FastHTML, RedirectResponse, Script, Title
 
-from data_types import Edge, Failure, Graph, GraphID, GraphManager, Node, NodeId, Success
+from data_types import Edge, Failure, GraphID, GraphManager, Node, NodeId, Success
 from graph_cytoscape_utils import get_cytoscape_script, graph_to_cytoscape_elements
 from styles import CONTAINER_CLASSES, GRAPH_CONTAINER_STYLE
 
@@ -16,23 +16,16 @@ def create_new_graph_and_redirect(graph_manager: GraphManager) -> RedirectRespon
     return RedirectResponse(f"{GRAPH_URL}?graph_id={graph.graph_id}")
 
 
-def add_example_nodes_and_edges(graph: Graph) -> Success | Failure:
-    try:
-        result = graph.add_elements(
-            [
-                Node(node_id=NodeId("node1")),
-                Node(node_id=NodeId("node2")),
-                Node(node_id=NodeId("node3")),
-                Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")),
-                Edge(source_node_id=NodeId("node2"), target_node_id=NodeId("node3")),
-                Edge(source_node_id=NodeId("node3"), target_node_id=NodeId("node1")),
-            ]
-        )
+def add_example_nodes_and_edges(graph_manager: GraphManager, graph_id: GraphID) -> Success | Failure:
+    for node in [Node(node_id=NodeId("node1")), Node(node_id=NodeId("node2")), Node(node_id=NodeId("node3"))]:
+        result = graph_manager.add_node(graph_id, node)
         if isinstance(result, Failure):
             return result
-        return Success()
-    except Exception as e:
-        return Failure(f"Error adding example nodes and edges: {e}")
+    for edge in [Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")), Edge(source_node_id=NodeId("node2"), target_node_id=NodeId("node3")), Edge(source_node_id=NodeId("node3"), target_node_id=NodeId("node1"))]:
+        result = graph_manager.add_edge(graph_id, edge)
+        if isinstance(result, Failure):
+            return result
+    return Success()
 
 
 def setup_graph_routes(app: FastHTML, graph_manager: GraphManager) -> None:
@@ -47,7 +40,7 @@ def setup_graph_routes(app: FastHTML, graph_manager: GraphManager) -> None:
 
         # Add a starter graph
         if graph.is_empty():
-            add_example_nodes_and_edges(graph)
+            add_example_nodes_and_edges(graph_manager, GraphID(graph_id))
         elements = json.dumps(graph_to_cytoscape_elements(graph))
 
         content = Div(

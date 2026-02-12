@@ -5,7 +5,8 @@ from starlette.testclient import TestClient
 
 from app import OK_CODE, start_app
 from chat_routes import parrot_chat
-from data_types import GraphID, GraphManager
+from data_types import Edge, Graph, GraphID, GraphManager, Node, NodeId
+from graph_cytoscape_utils import graph_to_cytoscape_elements
 from graph_routes import GRAPH_URL
 
 
@@ -39,3 +40,31 @@ def test_get_graph_page_without_graph_id_creates_new_graph(client: TestClient, g
     graph_id = url_after_redirect.split("graph_id=")[1]
     graph = graph_manager.get_graph(GraphID(graph_id))
     assert graph
+
+
+def test_graph_get_cytoscape_elements() -> None:
+    graph = Graph(
+        graph_id=GraphID("My Graph"),
+        nodes=[
+            Node(node_id=NodeId("node1")),
+            Node(node_id=NodeId("node2")),
+        ],
+        edges=[
+            Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")),
+        ],
+    )
+
+    elements = graph_to_cytoscape_elements(graph)
+
+    expected_nodes = [
+        {"data": {"id": "node1", "label": "node1"}},
+        {"data": {"id": "node2", "label": "node2"}},
+    ]
+    expected_edges = [
+        {"data": {"source": "node1", "target": "node2"}},
+    ]
+
+    nodes = [e for e in elements if "source" not in e["data"]]
+    edges = [e for e in elements if "source" in e["data"]]
+    assert nodes == expected_nodes
+    assert edges == expected_edges

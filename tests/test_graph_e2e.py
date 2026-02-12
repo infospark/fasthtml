@@ -2,7 +2,6 @@ import random
 import re
 import time
 
-import pytest
 from playwright.sync_api import Page, expect
 
 from app import start_app
@@ -138,9 +137,9 @@ def test_graph_page_initialises_graph(page: Page) -> None:
     # create a graph
     graph = graph_manager.create_graph()
     assert isinstance(graph, Graph)
-    assert graph.add_node(Node(node_id=NodeId("node X")))
-    assert graph.add_node(Node(node_id=NodeId("node Y")))
-    assert graph.add_edge(Edge(source_node_id=NodeId("node X"), target_node_id=NodeId("node Y")))
+    assert graph_manager.add_node(graph.graph_id, Node(node_id=NodeId("node X")))
+    assert graph_manager.add_node(graph.graph_id, Node(node_id=NodeId("node Y")))
+    assert graph_manager.add_edge(graph.graph_id, Edge(source_node_id=NodeId("node X"), target_node_id=NodeId("node Y")))
 
     # Navigate to the graph page
     url = f"http://localhost:{port}{GRAPH_URL}?graph_id={graph.graph_id}"
@@ -158,7 +157,6 @@ def test_graph_page_initialises_graph(page: Page) -> None:
     assert page_has_edge(page, "node X", "node Y")
 
 
-@pytest.mark.skip("Not implemented yet - specifically the page does not render additional nodes added to the server-side graph")
 def test_graph_page_adds_node(page: Page) -> None:
     # use a unique port for the server
     port = 5005 + random.randint(0, 10)
@@ -169,24 +167,32 @@ def test_graph_page_adds_node(page: Page) -> None:
     # create a graph
     graph = graph_manager.create_graph()
     assert isinstance(graph, Graph)
-    assert graph.add_node(Node(node_id=NodeId("node X")))
-    assert graph.add_node(Node(node_id=NodeId("node Y")))
-    assert graph.add_edge(Edge(source_node_id=NodeId("node X"), target_node_id=NodeId("node Y")))
+    graph_id = graph.graph_id
+    assert graph_manager.add_node(graph.graph_id, Node(node_id=NodeId("node X")))
+    assert graph_manager.add_node(graph.graph_id, Node(node_id=NodeId("node Y")))
+    assert graph_manager.add_edge(graph.graph_id, Edge(source_node_id=NodeId("node X"), target_node_id=NodeId("node Y")))
 
     # Navigate to the graph page
-    page.goto(f"http://localhost:{port}{GRAPH_URL}")
+    page.goto(f"http://localhost:{port}{GRAPH_URL}?graph_id={graph_id}")
 
     # Check that the page is at the correct URL
     expect(page.locator("h1")).to_have_text("Graph Demo")
 
-    # Add a new node to the server-side graph
-    graph.add_node(Node(node_id=NodeId("node Z")))
+    # Check that the node exists
+    assert page_has_node(page, "node X")
+    assert page_has_node(page, "node Y")
+    assert page_has_edge(page, "node X", "node Y")
+
+    # Now add a new node to the server-side graph
+    graph_manager.add_node(graph.graph_id, Node(node_id=NodeId("node Z")))
 
     # Check that the node exists
     assert page_has_node(page, "node Z")
 
 
 # TODO - live streaming of changes to the graph:
+# Must some SSE code 'listen' for events on the server side? If I add a node to a graph how does the SSE code know to send a message to the browser?
+# For now just directly send events over SSE
 # So SSE would be sitting waiting for events to be given to it
 # SO do that first - set up SSE on the server side and just start streaming messages from server to browser
 # For now just inject new nodes directly (i.e. do not change the graph instance and track changes to it)
