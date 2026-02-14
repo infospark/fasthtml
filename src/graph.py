@@ -6,12 +6,17 @@ from data_types import Failure, Success
 
 GraphID = NewType("GraphID", str)
 NodeId = NewType("NodeId", str)
+NodeType = NewType("NodeType", str)
 
+# Example Node Types
+PERSON = NodeType("Person")
+DOCUMENT = NodeType("Document")
+NOT_SPECIFIED = NodeType("Not Specified")
 
 @dataclass
 class Node:
     node_id: NodeId
-
+    type: NodeType = NOT_SPECIFIED
 
 @dataclass
 class Edge:

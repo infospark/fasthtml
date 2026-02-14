@@ -4,7 +4,7 @@ import logging
 from fasthtml.common import FT, H1, Div, FastHTML, RedirectResponse, Script, StreamingResponse, Title
 
 from data_types import Failure, Success
-from graph import Edge, GraphID, Node, NodeId
+from graph import DOCUMENT, PERSON, Edge, GraphID, Node, NodeId
 from graph_cytoscape_utils import get_cytoscape_script, get_graph_sse_script, graph_to_cytoscape_elements
 from graph_manager import GraphManager, graph_sse_stream
 from styles import CONTAINER_CLASSES, GRAPH_CONTAINER_STYLE
@@ -20,11 +20,16 @@ def create_new_graph_and_redirect(graph_manager: GraphManager) -> RedirectRespon
 
 
 def add_example_nodes_and_edges(graph_manager: GraphManager, graph_id: GraphID) -> Success | Failure:
-    for node in [Node(node_id=NodeId("node1")), Node(node_id=NodeId("node2")), Node(node_id=NodeId("node3"))]:
+    for node in [Node(node_id=NodeId("node1"), type=PERSON), Node(node_id=NodeId("node2"), type=DOCUMENT), Node(node_id=NodeId("node3"), type=PERSON)]:
         result = graph_manager.add_node(graph_id, node)
         if isinstance(result, Failure):
             return result
-    for edge in [Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")), Edge(source_node_id=NodeId("node2"), target_node_id=NodeId("node3")), Edge(source_node_id=NodeId("node3"), target_node_id=NodeId("node1"))]:
+    for edge in [
+        Edge(source_node_id=NodeId("node1"), target_node_id=NodeId("node2")),
+        Edge(source_node_id=NodeId("node2"), target_node_id=NodeId("node1")),
+        Edge(source_node_id=NodeId("node2"), target_node_id=NodeId("node3")),
+        Edge(source_node_id=NodeId("node3"), target_node_id=NodeId("node1")),
+    ]:
         result = graph_manager.add_edge(graph_id, edge)
         if isinstance(result, Failure):
             return result
@@ -52,6 +57,8 @@ def setup_graph_routes(app: FastHTML, graph_manager: GraphManager) -> None:
                 H1("Graph Demo"),
                 Div(id="graph-container", style=GRAPH_CONTAINER_STYLE),
                 Script(src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"),
+                Script(src="https://unpkg.com/webcola/WebCola/cola.min.js"),
+                Script(src="https://unpkg.com/cytoscape-cola/cytoscape-cola.js"),
                 get_cytoscape_script(elements),
                 get_graph_sse_script(GRAPH_EVENTS_URL, graph_id),
             ),

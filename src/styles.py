@@ -47,4 +47,4 @@ ONBOARDING_ADD_LINK_CLASSES = "text-blue-400 hover:text-blue-300 cursor-pointer 
 ONBOARDING_STREAM_CONTAINER_CLASSES = "space-y-2"
 
 # Sigma demo components
-GRAPH_CONTAINER_STYLE = "width: 100%; height: 600px; border: 2px solid blue;"
+GRAPH_CONTAINER_STYLE = "width: 100%; height: 600px; border: 1px solid white;"

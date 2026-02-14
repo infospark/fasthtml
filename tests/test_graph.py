@@ -1,5 +1,5 @@
 
-from graph import Edge, Graph, GraphID, Node, NodeId
+from graph import PERSON, Edge, Graph, GraphID, Node, NodeId
 
 
 def test_create_graph() -> None:
@@ -8,3 +8,8 @@ def test_create_graph() -> None:
     graph = Graph(graph_id=GraphID("graph1"), nodes=nodes, edges=edges)
     assert graph.nodes == nodes
     assert graph.edges == edges
+
+def test_node_attributes() -> None:
+    node = Node(node_id=NodeId("node1"), type=PERSON)
+    assert node.node_id == NodeId("node1")
+    assert node.type == PERSON

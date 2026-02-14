@@ -61,8 +61,8 @@ def test_graph_get_cytoscape_elements() -> None:
     elements = graph_to_cytoscape_elements(graph)
 
     expected_nodes = [
-        {"data": {"id": "node1", "label": "node1"}},
-        {"data": {"id": "node2", "label": "node2"}},
+        {"data": {"id": "node1", "label": "node1", "type": "Not Specified"}},
+        {"data": {"id": "node2", "label": "node2", "type": "Not Specified"}},
     ]
     expected_edges = [
         {"data": {"source": "node1", "target": "node2"}},
