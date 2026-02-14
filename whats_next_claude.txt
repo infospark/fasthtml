@@ -1,8 +1,9 @@
 ## Where We Are
 
-The server-side SSE infrastructure is fully in place. Graph mutations publish
-typed events (NodeAdded/EdgeAdded) via pub/sub, and an SSE endpoint streams
-them to clients.
+Live graph updates are working end-to-end. Server-side mutations publish
+typed events (NodeAdded/EdgeAdded) via pub/sub, stream to the browser over
+SSE, and the browser-side EventSource JS calls cy.add() to update Cytoscape
+in real time. E2E test confirms the full flow.
 
 ### What's been done:
 
@@ -21,19 +22,21 @@ them to clients.
    - Layer 2: graph_sse_stream() - async generator: subscribes to GraphManager, yields SSE-formatted strings
    - Layer 3: SSE route handler in graph_routes.py (GET /graph/events)
 
-5. **E2E tests separated** into tests_e2e/ directory to isolate Playwright's
+5. **Browser-side EventSource JS** in get_graph_sse_script() - listens for
+   graph_update events and calls cy.add() for node_added/edge_added.
+
+6. **E2E tests separated** into tests_e2e/ directory to isolate Playwright's
    event loop from pytest-asyncio unit tests. build.sh and CI updated.
+
+7. **E2E test for live updates** - test_graph_page_adds_node_to_existing_graph
+   verifies server-side add_node/add_edge appears in the browser via SSE.
 
 ### What's next:
 
-1. **Browser-side JS**: The graph page needs JavaScript that:
-   - Opens an EventSource connection to the SSE endpoint
-   - Parses incoming JSON events
-   - Calls Cytoscape's cy.add() for node_added/edge_added events
-   Look at the existing cytoscape script setup in graph_cytoscape_utils.py.
+1. **Graph visuals** - improve the look and feel of the graph:
+   - Node icons (e.g. different icons for different node types)
+   - Layout options (explore Cytoscape layouts beyond cose)
+   - Styling (colours, shapes, sizing, labels)
 
-2. **E2E test**: test_graph_page_adds_node_to_existing_graph in tests_e2e/ is
-   currently skipped (@pytest.mark.skip). Once the browser-side JS is wired up,
-   this test should pass - it adds a node server-side and checks the browser sees it.
-
-3. User changing a node - reflecting user changes via post events back to server? some thought needed here
+2. **User interactions** - reflecting user changes (e.g. moving/editing nodes)
+   back to the server via POST events. Needs some design thought.
