@@ -1,6 +1,5 @@
 import re
 
-import pytest
 from playwright.sync_api import Page, expect
 
 from data_types import Failure, Success
@@ -121,11 +120,10 @@ def test_graph_page_initial_graph_renders(page: Page, graph_server: tuple[GraphM
     assert page_has_edge(page, "node X", "node Y")
 
 
-@pytest.mark.skip("Not implemented yet - specifically the page does not render additional nodes added to the server-side graph")
 def test_graph_page_adds_node_to_existing_graph(page: Page, graph_server: tuple[GraphManager, int]) -> None:
     graph_manager, port = graph_server
 
-    # create a graph
+    # create a graph with initial nodes and an edge
     graph = graph_manager.create_graph()
     assert isinstance(graph, Graph)
     graph_id = graph.graph_id
@@ -135,30 +133,20 @@ def test_graph_page_adds_node_to_existing_graph(page: Page, graph_server: tuple[
 
     # Navigate to the graph page
     page.goto(f"http://localhost:{port}{GRAPH_URL}?graph_id={graph_id}")
-
-    # Check that the page is at the correct URL
     expect(page.locator("h1")).to_have_text("Graph Demo")
 
-    # Check that the node exists
+    # Verify initial graph rendered
     assert page_has_node(page, "node X")
     assert page_has_node(page, "node Y")
     assert page_has_edge(page, "node X", "node Y")
 
-    # Now add a new node to the server-side graph
+    # Add a new node server-side — should appear in browser via SSE
     graph_manager.add_node(graph.graph_id, Node(node_id=NodeId("node Z")))
+    page.wait_for_function("() => window.cy.$id('node Z').length > 0", timeout=5000)
 
-    # Check that the node exists
-    assert page_has_node(page, "node Z")
+    # Add an edge server-side — should appear in browser via SSE
+    graph_manager.add_edge(graph.graph_id, Edge(source_node_id=NodeId("node Y"), target_node_id=NodeId("node Z")))
+    page.wait_for_function('() => window.cy.edges(\'[source="node Y"][target="node Z"]\').length > 0', timeout=5000)
 
-
-# TODO - live streaming of changes to the graph:
-# Must some SSE code 'listen' for events on the server side? If I add a node to a graph how does the SSE code know to send a message to the browser?
-# For now just directly send events over SSE
-# So SSE would be sitting waiting for events to be given to it
-# SO do that first - set up SSE on the server side and just start streaming messages from server to browser
-# For now just inject new nodes directly (i.e. do not change the graph instance and track changes to it)
-# On the server side I need some kind of generator that will emit new Node/Edges - for now it can just iterate over a list that I pass to it from the test
-# Later something else will generate those events
-# Remember - I can run page.evaluate on the server side when testing - i cannot run page.evaluate on some users' browser!
 
 # TODO - mimic a user interacting with the graph - say moving node? ensure we pick that up too

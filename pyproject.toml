@@ -14,7 +14,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-testpaths = ["tests"]
+testpaths = ["tests", "tests_e2e"]
 log_level = "INFO"
 log_cli = true
 asyncio_mode = "auto"

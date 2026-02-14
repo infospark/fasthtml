@@ -70,3 +70,17 @@ def get_cytoscape_script(elements_json: str) -> FT:
         window.cy = cy;
         window.graph = cy;
     """)
+
+
+def get_graph_sse_script(events_url: str, graph_id: str) -> FT:
+    return Script(f"""
+        const evtSource = new EventSource("{events_url}?graph_id={graph_id}");
+        evtSource.addEventListener("graph_update", function(e) {{
+            const data = JSON.parse(e.data);
+            if (data.type === "node_added") {{
+                window.cy.add({{ group: 'nodes', data: {{ id: data.node_id, label: data.node_id }} }});
+            }} else if (data.type === "edge_added") {{
+                window.cy.add({{ group: 'edges', data: {{ source: data.source_node_id, target: data.target_node_id }} }});
+            }}
+        }});
+    """)

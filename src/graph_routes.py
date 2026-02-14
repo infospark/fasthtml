@@ -5,7 +5,7 @@ from fasthtml.common import FT, H1, Div, FastHTML, RedirectResponse, Script, Str
 
 from data_types import Failure, Success
 from graph import Edge, GraphID, Node, NodeId
-from graph_cytoscape_utils import get_cytoscape_script, graph_to_cytoscape_elements
+from graph_cytoscape_utils import get_cytoscape_script, get_graph_sse_script, graph_to_cytoscape_elements
 from graph_manager import GraphManager, graph_sse_stream
 from styles import CONTAINER_CLASSES, GRAPH_CONTAINER_STYLE
 
@@ -53,6 +53,7 @@ def setup_graph_routes(app: FastHTML, graph_manager: GraphManager) -> None:
                 Div(id="graph-container", style=GRAPH_CONTAINER_STYLE),
                 Script(src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"),
                 get_cytoscape_script(elements),
+                get_graph_sse_script(GRAPH_EVENTS_URL, graph_id),
             ),
         )
         return content
