@@ -98,6 +98,7 @@ def get_cytoscape_script(elements_json: str) -> FT:
                 name: 'cola',
                 infinite: true,
                 convergenceThreshold: 0.5,
+                edgeLength: 50,
                 fit: true,
                 padding: {LAYOUT_PADDING}
             }}
