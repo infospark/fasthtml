@@ -95,10 +95,13 @@ def get_cytoscape_script(elements_json: str) -> FT:
                 }}
             ],
             layout: {{
-                name: 'cola',
-                infinite: true,
-                convergenceThreshold: 0.5,
-                edgeLength: 50,
+                name: 'euler',
+                springLength: 50,
+                springCoeff: 0.0008,
+                mass: 4,
+                gravity: -1.2,
+                dragCoeff: 0.5,
+                animate: true,
                 fit: true,
                 padding: {LAYOUT_PADDING}
             }}
